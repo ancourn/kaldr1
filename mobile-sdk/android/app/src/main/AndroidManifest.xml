@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Permissions -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    
+    <!-- Camera features -->
+    <uses-feature android:name="android.hardware.camera.any" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+    
+    <!-- Allow HTTP cleartext traffic for development -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    
+    <application
+        android:name=".KaldrixWalletApplication"
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.KaldrixWallet"
+        android:usesCleartextTraffic="false"
+        tools:targetApi="31">
+        
+        <!-- Main Activity -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.KaldrixWallet">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            
+            <!-- Deep linking for wallet URIs -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="kaldrix" />
+            </intent-filter>
+        </activity>
+        
+        <!-- QR Code Scanner Activity -->
+        <activity
+            android:name=".features.qrscanner.QRScannerActivity"
+            android:theme="@style/Theme.KaldrixWallet.FullScreen" />
+        
+        <!-- Transaction Detail Activity -->
+        <activity
+            android:name=".features.transactions.TransactionDetailActivity"
+            android:theme="@style/Theme.KaldrixWallet" />
+        
+        <!-- Settings Activity -->
+        <activity
+            android:name=".features.settings.SettingsActivity"
+            android:theme="@style/Theme.KaldrixWallet" />
+        
+        <!-- Biometric Authentication Activity -->
+        <activity
+            android:name=".features.security.BiometricActivity"
+            android:theme="@style/Theme.KaldrixWallet.FullScreen" />
+        
+        <!-- Firebase Messaging Service -->
+        <service
+            android:name=".services.KaldrixFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        
+        <!-- Wallet Service -->
+        <service
+            android:name=".services.WalletService"
+            android:enabled="true"
+            android:exported="false" />
+        
+        <!-- Network Monitor Service -->
+        <service
+            android:name=".services.NetworkMonitorService"
+            android:enabled="true"
+            android:exported="false" />
+        
+        <!-- File Provider for sharing -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+        
+        <!-- Meta-data for Firebase -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/notification_color" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="@string/default_notification_channel_id" />
+        
+    </application>
+
+</manifest>

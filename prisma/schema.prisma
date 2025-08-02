@@ -1,0 +1,207 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Blockchain-specific models
+model Blockchain {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  networkId String   @unique
+  version   String
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  blocks    Block[]
+  transactions Transaction[]
+  nodes     DagNode[]
+  peers     NetworkPeer[]
+  metrics   NetworkMetrics[]
+  
+  @@map("blockchains")
+}
+
+model Block {
+  id           String   @id @default(cuid())
+  hash         String   @unique
+  previousHash String
+  height       Int      @unique
+  timestamp    DateTime @default(now())
+  nonce        Int
+  difficulty   Int
+  merkleRoot   String
+  txCount      Int      @default(0) // renamed from transactions to avoid conflict
+  size         Int      @default(0)
+  version      Int      @default(1)
+  blockchainId String
+  createdAt    DateTime @default(now())
+  
+  blockchain   Blockchain @relation(fields: [blockchainId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  
+  @@map("blocks")
+}
+
+model Transaction {
+  id                    String   @id @default(cuid())
+  txHash                String   @unique
+  sender                String
+  receiver              String
+  amount                BigInt
+  fee                   BigInt   @default(0)
+  timestamp             DateTime @default(now())
+  nonce                 Int
+  blockHeight           Int?
+  blockId               String?
+  status                String   @default("pending") // pending, confirmed, failed
+  confirmations         Int      @default(0)
+  size                  Int      @default(0)
+  weight                Int      @default(0)
+  confidence            Float    @default(0.0)
+  quantumResistanceScore Int     @default(0)
+  quantumProof          String?
+  metadata              String?
+  blockchainId          String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  blockchain            Blockchain @relation(fields: [blockchainId], references: [id], onDelete: Cascade)
+  block                 Block?     @relation(fields: [blockId], references: [id])
+  dagNode               DagNode?
+  quantumProofs         QuantumProof[]
+  
+  @@map("transactions")
+}
+
+model DagNode {
+  id                    String   @id @default(cuid())
+  nodeId                String   @unique
+  transactionId         String?  @unique
+  parentId              String?
+  childrenIds           String   // JSON array of child node IDs
+  weight                Int      @default(0)
+  confidence            Float    @default(0.0)
+  status                String   @default("pending") // pending, confirmed, rejected
+  quantumScore          Int      @default(0)
+  level                 Int      @default(0)
+  blockchainId          String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  blockchain            Blockchain  @relation(fields: [blockchainId], references: [id], onDelete: Cascade)
+  transaction           Transaction? @relation(fields: [transactionId], references: [id])
+  
+  @@map("dag_nodes")
+}
+
+model NetworkPeer {
+  id           String   @id @default(cuid())
+  peerId       String   @unique
+  address      String
+  port         Int
+  version      String
+  latency      Int      @default(0)
+  isConnected  Boolean  @default(false)
+  lastSeen     DateTime?
+  reputation   Int      @default(0)
+  country      String?
+  blockchainId String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  blockchain   Blockchain @relation(fields: [blockchainId], references: [id], onDelete: Cascade)
+  
+  @@map("network_peers")
+}
+
+model NetworkMetrics {
+  id               String   @id @default(cuid())
+  blockchainId     String
+  cpuUsage         Float    @default(0.0)
+  memoryUsage      Float    @default(0.0)
+  networkLatency   Float    @default(0.0)
+  activeConnections Int     @default(0)
+  tps              Float    @default(0.0)
+  blockTime        Float    @default(0.0)
+  mempoolSize      Int      @default(0)
+  totalPeers       Int      @default(0)
+  activePeers      Int      @default(0)
+  timestamp        DateTime @default(now())
+  
+  blockchain       Blockchain @relation(fields: [blockchainId], references: [id], onDelete: Cascade)
+  
+  @@map("network_metrics")
+}
+
+model QuantumProof {
+  id               String   @id @default(cuid())
+  transactionId    String   @unique
+  algorithm        String   // Kyber, Dilithium, SPHINCS+, etc.
+  proofData        String   // Base64 encoded proof data
+  verificationKey  String
+  score            Int      @default(0)
+  timestamp        DateTime @default(now())
+  isValid          Boolean  @default(true)
+  
+  transaction      Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  
+  @@map("quantum_proofs")
+}
+
+model GovernanceProposal {
+  id                    String   @id @default(cuid())
+  title                 String
+  description           String
+  type                  String   // protocol_upgrade, parameter_change, network_change, etc.
+  status                String   // pending, active, passed, rejected, expired
+  votesFor              Int      @default(0)
+  votesAgainst          Int      @default(0)
+  totalVotes            Int      @default(0)
+  createdBy             String
+  expiresAt             DateTime
+  blockchainId          String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  blockchain            Blockchain @relation(fields: [blockchainId], references: [id], onDelete: Cascade)
+  
+  @@map("governance_proposals")
+}
+
+// Legacy models (keeping for compatibility)
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  posts     Post[]
+  
+  @@map("users")
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  @@map("posts")
+}

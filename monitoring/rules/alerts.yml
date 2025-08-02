@@ -1,0 +1,246 @@
+# KALDRIX Alert Rules
+
+groups:
+  - name: system
+    rules:
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 80% for 5 minutes on {{ $labels.instance }}"
+
+      # Critical CPU usage
+      - alert: CriticalCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical CPU usage detected"
+          description: "CPU usage is above 90% for 2 minutes on {{ $labels.instance }}"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 80% for 5 minutes on {{ $labels.instance }}"
+
+      # Low disk space
+      - alert: LowDiskSpace
+        expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space detected"
+          description: "Disk space is above 85% on {{ $labels.instance }} mount {{ $labels.mountpoint }}"
+
+      # Critical disk space
+      - alert: CriticalDiskSpace
+        expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical disk space detected"
+          description: "Disk space is above 95% on {{ $labels.instance }} mount {{ $labels.mountpoint }}"
+
+  - name: application
+    rules:
+      # Application down
+      - alert: ApplicationDown
+        expr: up{job="kaldrix-app"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "KALDRIX application is down"
+          description: "The KALDRIX application is not responding on {{ $labels.instance }}"
+
+      # High HTTP error rate
+      - alert: HighHTTPErrorRate
+        expr: (rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])) * 100 > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High HTTP error rate detected"
+          description: "HTTP 5xx error rate is above 5% for 5 minutes"
+
+      # High response time
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is above 2 seconds for 5 minutes"
+
+      # Low active users
+      - alert: LowActiveUsers
+        expr: active_users < 10
+        for: 10m
+        labels:
+          severity: info
+        annotations:
+          summary: "Low active users detected"
+          description: "Number of active users is below 10 for 10 minutes"
+
+  - name: blockchain
+    rules:
+      # Blockchain node down
+      - alert: BlockchainNodeDown
+        expr: up{job="blockchain-nodes"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Blockchain node is down"
+          description: "Blockchain node {{ $labels.instance }} is not responding"
+
+      # Low transaction throughput
+      - alert: LowTransactionThroughput
+        expr: rate(blockchain_transactions_total[5m]) < 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low transaction throughput detected"
+          description: "Transaction throughput is below 1 TPS for 10 minutes"
+
+      # High transaction failure rate
+      - alert: HighTransactionFailureRate
+        expr: (rate(blockchain_transactions_failed_total[5m]) / rate(blockchain_transactions_total[5m])) * 100 > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High transaction failure rate detected"
+          description: "Transaction failure rate is above 5% for 5 minutes"
+
+      # Blockchain synchronization lag
+      - alert: BlockchainSyncLag
+        expr: blockchain_sync_lag_seconds > 300
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Blockchain synchronization lag detected"
+          description: "Blockchain synchronization lag is above 5 minutes"
+
+  - name: database
+    rules:
+      # PostgreSQL down
+      - alert: PostgreSQLDown
+        expr: up{job="postgres-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL database is not responding"
+
+      # High PostgreSQL connections
+      - alert: HighPostgreSQLConnections
+        expr: pg_stat_database_numbackends / pg_settings_max_connections * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High PostgreSQL connections detected"
+          description: "PostgreSQL connection usage is above 80%"
+
+      # Slow PostgreSQL queries
+      - alert: SlowPostgreSQLQueries
+        expr: rate(pg_stat_database_calls_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow PostgreSQL queries detected"
+          description: "PostgreSQL query rate is above 100 calls per second"
+
+  - name: redis
+    rules:
+      # Redis down
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache is not responding"
+
+      # High Redis memory usage
+      - alert: HighRedisMemoryUsage
+        expr: (redis_memory_used_bytes / redis_memory_max_bytes) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Redis memory usage detected"
+          description: "Redis memory usage is above 80%"
+
+      # Redis connection errors
+      - alert: RedisConnectionErrors
+        expr: rate(redis_connections_received_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis connection errors detected"
+          description: "Redis connection error rate is above 10 per second"
+
+  - name: ssl
+    rules:
+      # SSL certificate expiring soon
+      - alert: SSLCertificateExpiringSoon
+        expr: ssl_cert_expiry_time_seconds - time() < 86400 * 30
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate for {{ $labels.domain }} will expire in 30 days"
+
+      # SSL certificate expired
+      - alert: SSLCertificateExpired
+        expr: ssl_cert_expiry_time_seconds - time() < 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "SSL certificate expired"
+          description: "SSL certificate for {{ $labels.domain }} has expired"
+
+  - name: network
+    rules:
+      # High network traffic
+      - alert: HighNetworkTraffic
+        expr: rate(node_network_receive_bytes_total[5m]) > 100000000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High network traffic detected"
+          description: "Network receive rate is above 100MB/s on {{ $labels.instance }}"
+
+      # Network packet loss
+      - alert: NetworkPacketLoss
+        expr: rate(node_network_receive_drop_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Network packet loss detected"
+          description: "Network packet loss rate is above 10 packets per second on {{ $labels.instance }}"

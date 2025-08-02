@@ -1,0 +1,112 @@
+# Alertmanager configuration for Quantum DAG Blockchain
+
+global:
+  # The smarthost and SMTP sender used for mail notifications.
+  smtp_smarthost: 'localhost:587'
+  smtp_from: 'alertmanager@quantum-dag.local'
+  smtp_auth_username: 'alertmanager'
+  smtp_auth_password: 'password'
+
+  # The default route
+  route:
+    group_by: ['alertname', 'severity']
+    group_wait: 10s
+    group_interval: 10s
+    repeat_interval: 1h
+    receiver: 'web.hook'
+
+# Routes configuration
+routes:
+  # Critical alerts - immediate notification
+  - match:
+      severity: critical
+    receiver: 'critical-alerts'
+    continue: true
+
+  # Warning alerts - aggregated notification
+  - match:
+      severity: warning
+    receiver: 'warning-alerts'
+    continue: true
+
+  # Info alerts - daily digest
+  - match:
+      severity: info
+    receiver: 'info-alerts'
+    continue: true
+
+  # Default receiver
+  - receiver: 'web.hook'
+
+# Receivers configuration
+receivers:
+  # Critical alerts receiver
+  - name: 'critical-alerts'
+    email_configs:
+      - to: 'admin@quantum-dag.local'
+        subject: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Severity: {{ .Labels.severity }}
+          Starts at: {{ .StartsAt }}
+          {{ end }}
+    webhook_configs:
+      - url: 'http://localhost:5001/webhook'
+        send_resolved: true
+
+  # Warning alerts receiver
+  - name: 'warning-alerts'
+    email_configs:
+      - to: 'dev-team@quantum-dag.local'
+        subject: '⚠️ WARNING: {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Severity: {{ .Labels.severity }}
+          Starts at: {{ .StartsAt }}
+          {{ end }}
+    webhook_configs:
+      - url: 'http://localhost:5001/webhook'
+        send_resolved: true
+
+  # Info alerts receiver
+  - name: 'info-alerts'
+    email_configs:
+      - to: 'info@quantum-dag.local'
+        subject: 'ℹ️ INFO: {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Severity: {{ .Labels.severity }}
+          Starts at: {{ .StartsAt }}
+          {{ end }}
+
+  # Default webhook receiver
+  - name: 'web.hook'
+    webhook_configs:
+      - url: 'http://localhost:5001/webhook'
+        send_resolved: true
+
+# Inhibition rules
+inhibit_rules:
+  # Inhibit warning alerts if critical is firing
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'dev', 'instance']
+
+  # Inhibit info alerts if warning is firing
+  - source_match:
+      severity: 'warning'
+    target_match:
+      severity: 'info'
+    equal: ['alertname', 'dev', 'instance']
+
+# Templates
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
