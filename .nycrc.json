@@ -1,0 +1,43 @@
+{
+  "reporter": [
+    "text",
+    "html",
+    "lcov",
+    "json"
+  ],
+  "report-dir": "./coverage",
+  "include": [
+    "src/**/*.{js,jsx,ts,tsx}",
+    "!src/**/*.d.ts",
+    "!src/**/*.stories.{js,jsx,ts,tsx}",
+    "!src/**/index.ts"
+  ],
+  "exclude": [
+    "node_modules/",
+    "tests/",
+    "coverage/",
+    "**/*.config.*",
+    "**/*.test.{js,jsx,ts,tsx}",
+    "**/*.spec.{js,jsx,ts,tsx}"
+  ],
+  "require": [
+    "@vitest/coverage-v8"
+  ],
+  "extension": [
+    ".js",
+    ".jsx",
+    ".ts",
+    ".tsx"
+  ],
+  "check-coverage": true,
+  "branches": 80,
+  "lines": 80,
+  "functions": 80,
+  "statements": 80,
+  "watermarks": {
+    "statements": [80, 95],
+    "branches": [80, 95],
+    "functions": [80, 95],
+    "lines": [80, 95]
+  }
+}

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -9,10 +8,17 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Activity, Network, Shield, Zap, Database, TrendingUp, Cpu } from 'lucide-react'
+import { Activity, Network, Shield, Zap, Database, TrendingUp, Cpu, Coins, Users, ArrowRightLeft, ExternalLink } from 'lucide-react'
 import PerformanceScalingDashboard from '@/components/performance/performance-scaling-dashboard'
 import { ReliabilityDashboard } from '@/components/reliability/reliability-dashboard'
 import NetworkTestingDashboard from '@/components/network-testing/network-testing-dashboard'
+import DagExplorer from '@/components/dag/dag-explorer'
+import ValidatorPerformanceChart from '@/components/validators/validator-performance-chart'
+import BundleTimeline from '@/components/bundles/bundle-timeline'
+import TokenTracker from '@/components/tokens/token-tracker'
+import SwapUI from '@/components/token-utilities/swap-ui'
+import StakingDashboard from '@/components/token-utilities/staking-dashboard'
+import BridgeInterface from '@/components/token-utilities/bridge-interface'
 
 interface BlockchainStatus {
   isRunning: boolean
@@ -110,7 +116,7 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Cesium Quantum DAG Blockchain
+            KALDRIX Quantum DAG Blockchain
           </h1>
           <p className="text-lg text-muted-foreground">
             Post-Quantum Secure Directed Acyclic Graph Network
@@ -118,14 +124,19 @@ export default function Home() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-12">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="transactions">Transactions</TabsTrigger>
-            <TabsTrigger value="quantum">Quantum Security</TabsTrigger>
-            <TabsTrigger value="network">Network</TabsTrigger>
-            <TabsTrigger value="performance">Performance Scaling</TabsTrigger>
+            <TabsTrigger value="quantum">Quantum</TabsTrigger>
+            <TabsTrigger value="dag">DAG</TabsTrigger>
+            <TabsTrigger value="validators">Validators</TabsTrigger>
+            <TabsTrigger value="bundles">Bundles</TabsTrigger>
+            <TabsTrigger value="tokens">Tokens</TabsTrigger>
+            <TabsTrigger value="swap">Swap</TabsTrigger>
+            <TabsTrigger value="staking">Staking</TabsTrigger>
+            <TabsTrigger value="bridge">Bridge</TabsTrigger>
+            <TabsTrigger value="performance">Performance</TabsTrigger>
             <TabsTrigger value="reliability">Reliability</TabsTrigger>
-            <TabsTrigger value="network-testing">Network Testing</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -361,15 +372,15 @@ export default function Home() {
                     <ul className="space-y-2 text-sm">
                       <li className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-green-500 rounded-full" />
-                        Quantum-resistant key exchange
+                        Quantum-resistant consensus
                       </li>
                       <li className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-green-500 rounded-full" />
-                        Post-quantum secure channels
+                        Post-quantum key exchange
                       </li>
                       <li className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-green-500 rounded-full" />
-                        Future-proof architecture
+                        Secure multi-party computation
                       </li>
                     </ul>
                   </div>
@@ -378,60 +389,32 @@ export default function Home() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="network" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Peers</CardTitle>
-                  <CardDescription>Connected network nodes</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold">42</div>
-                  <p className="text-sm text-muted-foreground">Active connections</p>
-                </CardContent>
-              </Card>
+          <TabsContent value="dag" className="space-y-6">
+            <DagExplorer />
+          </TabsContent>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Sync Status</CardTitle>
-                  <CardDescription>Blockchain synchronization</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold">100%</div>
-                  <p className="text-sm text-muted-foreground">Fully synchronized</p>
-                </CardContent>
-              </Card>
+          <TabsContent value="validators" className="space-y-6">
+            <ValidatorPerformanceChart />
+          </TabsContent>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Uptime</CardTitle>
-                  <CardDescription>Network availability</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold">99.9%</div>
-                  <p className="text-sm text-muted-foreground">Last 30 days</p>
-                </CardContent>
-              </Card>
-            </div>
+          <TabsContent value="bundles" className="space-y-6">
+            <BundleTimeline />
+          </TabsContent>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Network Topology</CardTitle>
-                <CardDescription>
-                  DAG structure visualization
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <Network className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
-                      Interactive DAG visualization would be rendered here
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="tokens" className="space-y-6">
+            <TokenTracker />
+          </TabsContent>
+
+          <TabsContent value="swap" className="space-y-6">
+            <SwapUI />
+          </TabsContent>
+
+          <TabsContent value="staking" className="space-y-6">
+            <StakingDashboard />
+          </TabsContent>
+
+          <TabsContent value="bridge" className="space-y-6">
+            <BridgeInterface />
           </TabsContent>
 
           <TabsContent value="performance" className="space-y-6">
@@ -441,10 +424,6 @@ export default function Home() {
           <TabsContent value="reliability" className="space-y-6">
             <ReliabilityDashboard />
           </TabsContent>
-
-          <TabsContent value="network-testing" className="space-y-6">
-            <NetworkTestingDashboard />
-          </TabsContent>
         </Tabs>
 
         <div className="mt-8 text-center">
@@ -452,17 +431,6 @@ export default function Home() {
             Connect to Quantum Network
           </Button>
         </div>
-=======
-export default function Home() {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen gap-8 p-4">
-      <div className="relative w-24 h-24 md:w-32 md:h-32">
-        <img
-          src="/logo.svg"
-          alt="Z.ai Logo"
-          className="w-full h-full object-contain"
-        />
->>>>>>> master
       </div>
     </div>
   )

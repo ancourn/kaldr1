@@ -1,5 +1,5 @@
 import { vi } from 'vitest'
-import { config } from '@vue/test-utils'
+import '@testing-library/jest-dom'
 
 // Mock Next.js router
 vi.mock('next/router', () => ({
@@ -33,6 +33,25 @@ vi.mock('next/image', () => ({
       type: 'img',
       props: props,
     }
+  },
+}))
+
+// Mock Next.js navigation
+vi.mock('next/navigation', () => ({
+  useRouter() {
+    return {
+      push: vi.fn(),
+      replace: vi.fn(),
+      back: vi.fn(),
+      forward: vi.fn(),
+      refresh: vi.fn(),
+    }
+  },
+  useSearchParams() {
+    return new URLSearchParams()
+  },
+  usePathname() {
+    return '/'
   },
 }))
 
@@ -78,9 +97,122 @@ global.WebSocket = vi.fn().mockImplementation(() => ({
   CLOSED: 3,
 }))
 
+// Mock fetch API
+global.fetch = vi.fn()
+
+// Mock console methods to reduce noise during tests
+global.console = {
+  ...console,
+  log: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+}
+
 // Set up global test utilities
 global.describe = describe
 global.it = it
 global.test = test
 global.expect = expect
 global.vi = vi
+
+// Mock CSS imports
+vi.mock('*.css', () => ({
+  default: '',
+}))
+
+// Mock shadcn/ui components
+vi.mock('@/components/ui/button', () => ({
+  Button: ({ children, ...props }: any) => ({
+    type: 'button',
+    props: { children, ...props },
+  }),
+}))
+
+vi.mock('@/components/ui/card', () => ({
+  Card: ({ children, ...props }: any) => ({
+    type: 'div',
+    props: { children, ...props },
+  }),
+  CardHeader: ({ children, ...props }: any) => ({
+    type: 'div',
+    props: { children, ...props },
+  }),
+  CardContent: ({ children, ...props }: any) => ({
+    type: 'div',
+    props: { children, ...props },
+  }),
+  CardTitle: ({ children, ...props }: any) => ({
+    type: 'h3',
+    props: { children, ...props },
+  }),
+  CardDescription: ({ children, ...props }: any) => ({
+    type: 'p',
+    props: { children, ...props },
+  }),
+}))
+
+vi.mock('@/components/ui/tabs', () => ({
+  Tabs: ({ children, ...props }: any) => ({
+    type: 'div',
+    props: { children, ...props },
+  }),
+  TabsList: ({ children, ...props }: any) => ({
+    type: 'div',
+    props: { children, ...props },
+  }),
+  TabsTrigger: ({ children, ...props }: any) => ({
+    type: 'button',
+    props: { children, ...props },
+  }),
+  TabsContent: ({ children, ...props }: any) => ({
+    type: 'div',
+    props: { children, ...props },
+  }),
+}))
+
+vi.mock('@/components/ui/badge', () => ({
+  Badge: ({ children, ...props }: any) => ({
+    type: 'span',
+    props: { children, ...props },
+  }),
+}))
+
+vi.mock('@/components/ui/progress', () => ({
+  Progress: ({ ...props }: any) => ({
+    type: 'div',
+    props: { ...props },
+  }),
+}))
+
+vi.mock('@/components/ui/alert', () => ({
+  Alert: ({ children, ...props }: any) => ({
+    type: 'div',
+    props: { children, ...props },
+  }),
+  AlertDescription: ({ children, ...props }: any) => ({
+    type: 'div',
+    props: { children, ...props },
+  }),
+}))
+
+vi.mock('@/components/ui/skeleton', () => ({
+  Skeleton: ({ ...props }: any) => ({
+    type: 'div',
+    props: { ...props },
+  }),
+}))
+
+// Mock lucide-react icons
+vi.mock('lucide-react', () => ({
+  Activity: () => ({ type: 'svg', props: {} }),
+  Network: () => ({ type: 'svg', props: {} }),
+  Shield: () => ({ type: 'svg', props: {} }),
+  Zap: () => ({ type: 'svg', props: {} }),
+  Database: () => ({ type: 'svg', props: {} }),
+  TrendingUp: () => ({ type: 'svg', props: {} }),
+  Cpu: () => ({ type: 'svg', props: {} }),
+  Coins: () => ({ type: 'svg', props: {} }),
+  Users: () => ({ type: 'svg', props: {} }),
+  ArrowRightLeft: () => ({ type: 'svg', props: {} }),
+  ExternalLink: () => ({ type: 'svg', props: {} }),
+}))
