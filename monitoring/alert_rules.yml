@@ -1,0 +1,209 @@
+# Alert rules for Quantum-Proof DAG Blockchain
+
+groups:
+  - name: blockchain_health
+    rules:
+      # High transaction latency
+      - alert: HighTransactionLatency
+        expr: histogram_quantile(0.95, dag_transaction_latency_seconds_bucket) > 30
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High transaction latency detected"
+          description: "95th percentile transaction latency is {{ $value }} seconds for 5 minutes"
+
+      # Critical transaction latency
+      - alert: CriticalTransactionLatency
+        expr: histogram_quantile(0.95, dag_transaction_latency_seconds_bucket) > 60
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical transaction latency detected"
+          description: "95th percentile transaction latency is {{ $value }} seconds for 2 minutes"
+
+      # Many pending transactions
+      - alert: HighPendingTransactions
+        expr: dag_transactions_pending > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of pending transactions"
+          description: "{{ $value }} pending transactions for 5 minutes"
+
+      # Too many pending transactions
+      - alert: CriticalPendingTransactions
+        expr: dag_transactions_pending > 500
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical number of pending transactions"
+          description: "{{ $value }} pending transactions for 2 minutes"
+
+      # Low consensus success rate
+      - alert: LowConsensusSuccessRate
+        expr: dag_consensus_success_rate < 0.95
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low consensus success rate"
+          description: "Consensus success rate is {{ $value | humanizePercentage }} for 5 minutes"
+
+      # Critical consensus success rate
+      - alert: CriticalConsensusSuccessRate
+        expr: dag_consensus_success_rate < 0.80
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical consensus success rate"
+          description: "Consensus success rate is {{ $value | humanizePercentage }} for 2 minutes"
+
+      # Fork detection
+      - alert: ForkDetected
+        expr: increase(dag_forks_detected_total[1m]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "Fork detected in blockchain"
+          description: "Fork detected in the blockchain DAG"
+
+  - name: system_health
+    rules:
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: dag_memory_usage_bytes / 1024 / 1024 > 1024  # > 1GB
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value | humanizeBytes }} for 5 minutes"
+
+      # Critical memory usage
+      - alert: CriticalMemoryUsage
+        expr: dag_memory_usage_bytes / 1024 / 1024 > 2048  # > 2GB
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical memory usage"
+          description: "Memory usage is {{ $value | humanizeBytes }} for 2 minutes"
+
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: dag_cpu_usage_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}% for 5 minutes"
+
+      # Critical CPU usage
+      - alert: CriticalCPUUsage
+        expr: dag_cpu_usage_percent > 90
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical CPU usage"
+          description: "CPU usage is {{ $value }}% for 2 minutes"
+
+      # Low disk space
+      - alert: LowDiskSpace
+        expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space"
+          description: "Disk usage is {{ $value }}% for 5 minutes"
+
+      # Critical disk space
+      - alert: CriticalDiskSpace
+        expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) * 100 > 90
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical disk space"
+          description: "Disk usage is {{ $value }}% for 2 minutes"
+
+  - name: node_health
+    rules:
+      # Node down
+      - alert: NodeDown
+        expr: up{job="quantum-dag-blockchain"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Blockchain node is down"
+          description: "Blockchain node has been down for 1 minute"
+
+      # High node uptime (suggesting restart needed)
+      - alert: HighNodeUptime
+        expr: dag_node_uptime_seconds > 604800  # > 7 days
+        for: 1m
+        labels:
+          severity: info
+        annotations:
+          summary: "Node uptime high"
+          description: "Node has been running for {{ $value | humanizeDuration }}, consider scheduled restart"
+
+      # Signature verification failures
+      - alert: SignatureVerificationFailures
+        expr: rate(dag_signature_failures_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Signature verification failures detected"
+          description: "Signature verification failures detected in the last 5 minutes"
+
+      # Storage errors
+      - alert: StorageErrors
+        expr: rate(dag_storage_errors_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Storage errors detected"
+          description: "Storage errors detected in the last 5 minutes"
+
+  - name: network_health
+    rules:
+      # Low network connections
+      - alert: LowNetworkConnections
+        expr: dag_network_connections < 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low network connections"
+          description: "Only {{ $value }} network connections for 5 minutes"
+
+      # High finality time
+      - alert: HighFinalityTime
+        expr: histogram_quantile(0.95, dag_finality_time_seconds_bucket) > 120
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High finality time"
+          description: "95th percentile finality time is {{ $value }} seconds for 5 minutes"
+
+      # Critical finality time
+      - alert: CriticalFinalityTime
+        expr: histogram_quantile(0.95, dag_finality_time_seconds_bucket) > 300
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical finality time"
+          description: "95th percentile finality time is {{ $value }} seconds for 2 minutes"

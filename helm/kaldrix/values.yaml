@@ -1,0 +1,527 @@
+# Global configuration
+global:
+  imageRegistry: "ghcr.io/your-org"
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+  namespace: "kaldrix"
+  environment: "production"
+
+# Common labels and annotations
+commonLabels:
+  app: "kaldrix-blockchain"
+  version: "1.0.0"
+
+commonAnnotations:
+  maintainers: "KALDRIX Team <team@kaldrix.com>"
+  documentation: "https://docs.kaldrix.com"
+
+# Resource limits and requests
+resources:
+  requests:
+    memory: "1Gi"
+    cpu: "500m"
+  limits:
+    memory: "2Gi"
+    cpu: "1000m"
+
+# Storage configuration
+storage:
+  className: "standard"
+  postgresSize: "50Gi"
+  redisSize: "10Gi"
+  blockchainSize: "100Gi"
+
+# Networking configuration
+networking:
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: "/"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      nginx.ingress.kubernetes.io/rate-limit: "100"
+      nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    hosts:
+      - host: kaldrix.com
+        paths:
+          - path: "/"
+            pathType: "Prefix"
+            service: "frontend-service"
+            port: 3000
+      - host: api.kaldrix.com
+        paths:
+          - path: "/"
+            pathType: "Prefix"
+            service: "backend-service"
+            port: 3001
+      - host: ws.kaldrix.com
+        paths:
+          - path: "/"
+            pathType: "Prefix"
+            service: "backend-service"
+            port: 8080
+      - host: node.kaldrix.com
+        paths:
+          - path: "/"
+            pathType: "Prefix"
+            service: "blockchain-service"
+            port: 8545
+    tls:
+      - secretName: "kaldrix-tls"
+        hosts:
+          - "kaldrix.com"
+          - "api.kaldrix.com"
+          - "ws.kaldrix.com"
+          - "node.kaldrix.com"
+
+# Frontend configuration
+frontend:
+  enabled: true
+  replicaCount: 3
+  image:
+    repository: "kaldrix"
+    tag: "latest"
+    pullPolicy: "IfNotPresent"
+  service:
+    type: "ClusterIP"
+    port: 3000
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
+  env:
+    NODE_ENV: "production"
+    NEXT_PUBLIC_API_URL: "https://api.kaldrix.com"
+    NEXT_PUBLIC_WS_URL: "wss://ws.kaldrix.com"
+
+# Backend configuration
+backend:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: "kaldrix-backend"
+    tag: "latest"
+    pullPolicy: "IfNotPresent"
+  service:
+    type: "ClusterIP"
+    ports:
+      http: 3001
+      websocket: 8080
+  resources:
+    requests:
+      memory: "2Gi"
+      cpu: "1000m"
+    limits:
+      memory: "4Gi"
+      cpu: "2000m"
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+    targetRequestsPerSecond: 1000
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+  env:
+    NODE_ENV: "production"
+    LOG_LEVEL: "warn"
+    NETWORK_ID: "1"
+    CHAIN_ID: "1"
+    GAS_LIMIT: "8000000"
+    BLOCK_TIME: "15000"
+
+# Blockchain node configuration
+blockchain:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: "kaldrix-node"
+    tag: "latest"
+    pullPolicy: "IfNotPresent"
+  service:
+    type: "ClusterIP"
+    ports:
+      rpc: 8545
+      wsRpc: 8546
+      p2p: 30303
+  resources:
+    requests:
+      memory: "4Gi"
+      cpu: "2000m"
+    limits:
+      memory: "8Gi"
+      cpu: "4000m"
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 90
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+  env:
+    NODE_ENV: "production"
+    LOG_LEVEL: "warn"
+    NETWORK_ID: "1"
+    CHAIN_ID: "1"
+    GAS_LIMIT: "8000000"
+    BLOCK_TIME: "15000"
+
+# PostgreSQL configuration
+postgresql:
+  enabled: true
+  global:
+    postgresql:
+      auth:
+        postgresPassword: ""
+        database: "kaldrix_prod"
+        username: "kaldrix"
+  primary:
+    persistence:
+      enabled: true
+      storageClass: "standard"
+      size: "50Gi"
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "1000m"
+      limits:
+        memory: "4Gi"
+        cpu: "2000m"
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+# Redis configuration
+redis:
+  enabled: true
+  global:
+    redis:
+      password: ""
+  master:
+    persistence:
+      enabled: true
+      storageClass: "standard"
+      size: "10Gi"
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+# Prometheus configuration
+prometheus:
+  enabled: true
+  server:
+    persistentVolume:
+      enabled: true
+      storageClass: "standard"
+      size: "20Gi"
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "1000m"
+      limits:
+        memory: "4Gi"
+        cpu: "2000m"
+  alertmanager:
+    enabled: true
+    persistentVolume:
+      enabled: true
+      storageClass: "standard"
+      size: "5Gi"
+  pushgateway:
+    enabled: false
+  serverFiles:
+    prometheus.yml:
+      global:
+        scrape_interval: "15s"
+        evaluation_interval: "15s"
+      rule_files:
+        - "/etc/prometheus/rules/*.yml"
+      alerting:
+        alertmanagers:
+          - static_configs:
+              - targets:
+                - "alertmanager:9093"
+      scrape_configs:
+        - job_name: 'kubernetes-pods'
+          kubernetes_sd_configs:
+            - role: pod
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+              action: keep
+              regex: true
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+              action: replace
+              target_label: __metrics_path__
+              regex: (.+)
+            - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+              action: replace
+              regex: ([^:]+)(?::\d+)?;(\d+)
+              replacement: $1:$2
+              target_label: __address__
+            - action: labelmap
+              regex: __meta_kubernetes_pod_label_(.+)
+            - source_labels: [__meta_kubernetes_namespace]
+              action: replace
+              target_label: kubernetes_namespace
+            - source_labels: [__meta_kubernetes_pod_name]
+              action: replace
+              target_label: kubernetes_pod_name
+        - job_name: 'kaldrix-frontend'
+          static_configs:
+            - targets: ['frontend-service:3000']
+          metrics_path: '/metrics'
+          scrape_interval: "30s"
+        - job_name: 'kaldrix-backend'
+          static_configs:
+            - targets: ['backend-service:3001']
+          metrics_path: '/metrics'
+          scrape_interval: "30s"
+        - job_name: 'kaldrix-blockchain'
+          static_configs:
+            - targets: ['blockchain-service:8545']
+          metrics_path: '/metrics'
+          scrape_interval: "30s"
+
+# Grafana configuration
+grafana:
+  enabled: true
+  adminPassword: "admin"
+  persistence:
+    enabled: true
+    storageClass: "standard"
+    size: "10Gi"
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: 'default'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/default
+  dashboards:
+    default:
+      kaldrix-overview:
+        gnetId: 0
+        datasource: Prometheus
+        json: |
+          {
+            "dashboard": {
+              "id": null,
+              "title": "KALDRIX Overview",
+              "tags": ["kaldrix"],
+              "timezone": "browser",
+              "panels": [
+                {
+                  "id": 1,
+                  "title": "System Overview",
+                  "type": "stat",
+                  "targets": [
+                    {
+                      "expr": "up",
+                      "legendFormat": "Services"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+
+# Monitoring and alerting
+monitoring:
+  enabled: true
+  serviceAccount:
+    create: true
+    name: "kaldrix-monitoring"
+  rbac:
+    create: true
+    rules:
+      - apiGroups: [""]
+        resources: ["nodes", "nodes/proxy", "services", "endpoints", "pods"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: ["extensions"]
+        resources: ["deployments"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: ["apps"]
+        resources: ["deployments", "replicasets", "pods"]
+        verbs: ["get", "list", "watch"]
+  alerts:
+    enabled: true
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 80% for 5 minutes on instance {{ $labels.instance }}"
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 85% for 5 minutes on instance {{ $labels.instance }}"
+      - alert: FrontendDown
+        expr: up{job="kaldrix-frontend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Frontend service is down"
+          description: "Frontend service has been down for more than 1 minute"
+      - alert: BackendDown
+        expr: up{job="kaldrix-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend service is down"
+          description: "Backend service has been down for more than 1 minute"
+      - alert: BlockchainNodeDown
+        expr: up{job="kaldrix-blockchain"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Blockchain node is down"
+          description: "Blockchain node has been down for more than 1 minute"
+
+# Security configuration
+security:
+  podSecurityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
+  containerSecurityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+  networkPolicy:
+    enabled: true
+    egressRules:
+      - to: []
+        ports: []
+    ingressRules:
+      - from: []
+        ports: []
+
+# Secrets management
+secrets:
+  enabled: true
+  externalSecrets:
+    enabled: false
+    vault:
+      enabled: false
+      address: ""
+      role: ""
+      path: ""
+  secrets:
+    databasePassword: ""
+    jwtSecret: ""
+    redisPassword: ""
+    validatorPrivateKey: ""
+    sentryDsn: ""
+
+# Health checks
+healthChecks:
+  enabled: true
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# Zero-downtime deployment
+zeroDowntime:
+  enabled: true
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  terminationGracePeriodSeconds: 60
+
+# Backup and recovery
+backup:
+  enabled: false
+  schedule: "0 2 * * *"
+  retention: "7d"
+  storage:
+    className: "standard"
+    size: "100Gi"
+  databases:
+    - name: "postgres"
+      host: "postgres-service"
+      port: 5432
+      database: "kaldrix_prod"
+      username: "kaldrix"
+
+# Logging configuration
+logging:
+  enabled: true
+  level: "info"
+  format: "json"
+  fluentd:
+    enabled: false
+    image: "fluent/fluentd:v1.16-1"
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+  loki:
+    enabled: false
+    address: ""
+    username: ""
+    password: ""

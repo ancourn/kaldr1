@@ -1,0 +1,413 @@
+groups:
+  - name: kaldrix-alerts
+    rules:
+      # System Health Alerts
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 80% for 5 minutes on instance {{ $labels.instance }}"
+
+      - alert: CriticalCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+        for: 2m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "Critical CPU usage detected"
+          description: "CPU usage is above 90% for 2 minutes on instance {{ $labels.instance }}"
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 85% for 5 minutes on instance {{ $labels.instance }}"
+
+      - alert: CriticalMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "Critical memory usage detected"
+          description: "Memory usage is above 95% for 2 minutes on instance {{ $labels.instance }}"
+
+      - alert: HighDiskUsage
+        expr: (node_filesystem_size_bytes{fstype!="tmpfs"} - node_filesystem_free_bytes{fstype!="tmpfs"}) / node_filesystem_size_bytes{fstype!="tmpfs"} * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High disk usage detected"
+          description: "Disk usage is above 85% for 5 minutes on instance {{ $labels.instance }}"
+
+      - alert: CriticalDiskUsage
+        expr: (node_filesystem_size_bytes{fstype!="tmpfs"} - node_filesystem_free_bytes{fstype!="tmpfs"}) / node_filesystem_size_bytes{fstype!="tmpfs"} * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "Critical disk usage detected"
+          description: "Disk usage is above 95% for 2 minutes on instance {{ $labels.instance }}"
+
+      # Application Health Alerts
+      - alert: FrontendDown
+        expr: up{job="kaldrix-frontend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: frontend
+        annotations:
+          summary: "Frontend service is down"
+          description: "Frontend service has been down for more than 1 minute"
+
+      - alert: BackendDown
+        expr: up{job="kaldrix-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: backend
+        annotations:
+          summary: "Backend service is down"
+          description: "Backend service has been down for more than 1 minute"
+
+      - alert: BlockchainNodeDown
+        expr: up{job="kaldrix-blockchain"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: blockchain
+        annotations:
+          summary: "Blockchain node is down"
+          description: "Blockchain node has been down for more than 1 minute"
+
+      - alert: WebSocketServerDown
+        expr: up{job="websocket-server"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: websocket
+        annotations:
+          summary: "WebSocket server is down"
+          description: "WebSocket server has been down for more than 1 minute"
+
+      # Performance Alerts
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is above 1 second for 5 minutes"
+
+      - alert: CriticalResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 3
+        for: 2m
+        labels:
+          severity: critical
+          component: performance
+        annotations:
+          summary: "Critical response time detected"
+          description: "95th percentile response time is above 3 seconds for 2 minutes"
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is above 5% for 5 minutes"
+
+      - alert: CriticalErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+          component: performance
+        annotations:
+          summary: "Critical error rate detected"
+          description: "Error rate is above 10% for 2 minutes"
+
+      # Database Alerts
+      - alert: DatabaseConnectionsHigh
+        expr: pg_stat_database_numbackends / pg_settings_max_connections * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "High database connections"
+          description: "Database connections are above 80% of maximum"
+
+      - alert: DatabaseSlowQueries
+        expr: rate(pg_stat_database_calls_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "High database query rate"
+          description: "Database query rate is above 100 queries per second"
+
+      - alert: DatabaseDeadlocks
+        expr: rate(pg_stat_database_deadlocks[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "Database deadlocks detected"
+          description: "Database deadlocks detected in the last minute"
+
+      # Redis Alerts
+      - alert: RedisMemoryHigh
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: redis
+        annotations:
+          summary: "High Redis memory usage"
+          description: "Redis memory usage is above 80% of maximum"
+
+      - alert: RedisConnectionsHigh
+        expr: redis_connected_clients / redis_config_maxclients * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: redis
+        annotations:
+          summary: "High Redis connections"
+          description: "Redis connections are above 80% of maximum"
+
+      - alert: RedisSlowlog
+        expr: redis_slowlog_length > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: redis
+        annotations:
+          summary: "Redis slow queries detected"
+          description: "Redis slowlog has more than 10 entries"
+
+      # Blockchain-specific Alerts
+      - alert: BlockchainSyncBehind
+        expr: blockchain_sync_behind_blocks > 100
+        for: 5m
+        labels:
+          severity: warning
+          component: blockchain
+        annotations:
+          summary: "Blockchain sync is behind"
+          description: "Blockchain is {{ $value }} blocks behind"
+
+      - alert: BlockchainSyncCritical
+        expr: blockchain_sync_behind_blocks > 1000
+        for: 2m
+        labels:
+          severity: critical
+          component: blockchain
+        annotations:
+          summary: "Blockchain sync critically behind"
+          description: "Blockchain is {{ $value }} blocks behind - needs immediate attention"
+
+      - alert: LowPeerCount
+        expr: blockchain_connected_peers < 5
+        for: 5m
+        labels:
+          severity: warning
+          component: blockchain
+        annotations:
+          summary: "Low peer count"
+          description: "Blockchain node has only {{ $value }} connected peers"
+
+      - alert: NoPeersConnected
+        expr: blockchain_connected_peers == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: blockchain
+        annotations:
+          summary: "No peers connected"
+          description: "Blockchain node has no connected peers"
+
+      - alert: HighTransactionLatency
+        expr: blockchain_transaction_latency_seconds > 30
+        for: 5m
+        labels:
+          severity: warning
+          component: blockchain
+        annotations:
+          summary: "High transaction latency"
+          description: "Transaction latency is above 30 seconds"
+
+      - alert: CriticalTransactionLatency
+        expr: blockchain_transaction_latency_seconds > 60
+        for: 2m
+        labels:
+          severity: critical
+          component: blockchain
+        annotations:
+          summary: "Critical transaction latency"
+          description: "Transaction latency is above 60 seconds"
+
+      # WebSocket Alerts
+      - alert: WebSocketConnectionsHigh
+        expr: websocket_active_connections > 500
+        for: 5m
+        labels:
+          severity: warning
+          component: websocket
+        annotations:
+          summary: "High WebSocket connections"
+          description: "WebSocket connections are above 500"
+
+      - alert: WebSocketConnectionErrors
+        expr: rate(websocket_connection_errors_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: websocket
+        annotations:
+          summary: "WebSocket connection errors"
+          description: "WebSocket connection errors rate is above 10 per minute"
+
+      - alert: WebSocketMessageQueueHigh
+        expr: websocket_message_queue_size > 1000
+        for: 5m
+        labels:
+          severity: warning
+          component: websocket
+        annotations:
+          summary: "WebSocket message queue high"
+          description: "WebSocket message queue size is above 1000"
+
+      # Smart Contract Alerts
+      - alert: SmartContractDeploymentFailed
+        expr: smart_contract_deployment_failed_total > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: smart-contract
+        annotations:
+          summary: "Smart contract deployment failed"
+          description: "Smart contract deployment failed"
+
+      - alert: SmartContractExecutionFailed
+        expr: rate(smart_contract_execution_failed_total[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          component: smart-contract
+        annotations:
+          summary: "Smart contract execution failures"
+          description: "Smart contract execution failure rate is above 5 per minute"
+
+      # Network Alerts
+      - alert: NetworkPartitionDetected
+        expr: network_partition_detected == 1
+        for: 1m
+        labels:
+          severity: critical
+          component: network
+        annotations:
+          summary: "Network partition detected"
+          description: "Network partition detected - nodes are isolated"
+
+      - alert: HighNetworkLatency
+        expr: network_latency_seconds > 1
+        for: 5m
+        labels:
+          severity: warning
+          component: network
+        annotations:
+          summary: "High network latency"
+          description: "Network latency is above 1 second"
+
+      - alert: NetworkPacketLoss
+        expr: network_packet_loss_rate > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          component: network
+        annotations:
+          summary: "High network packet loss"
+          description: "Network packet loss rate is above 5%"
+
+      # Container Alerts
+      - alert: ContainerRestarts
+        expr: rate(container_restart_count[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          component: containers
+        annotations:
+          summary: "Container restarts detected"
+          description: "Container {{ $labels.container }} has restarted {{ $value }} times in the last 5 minutes"
+
+      - alert: ContainerOOMKilled
+        expr: container_oom_killed_total > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: containers
+        annotations:
+          summary: "Container OOM killed"
+          description: "Container {{ $labels.container }} was killed due to out of memory"
+
+      # Business Logic Alerts
+      - alert: LowTransactionThroughput
+        expr: blockchain_transactions_per_second < 10
+        for: 10m
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "Low transaction throughput"
+          description: "Transaction throughput is below 10 TPS for 10 minutes"
+
+      - alert: ZeroTransactionThroughput
+        expr: blockchain_transactions_per_second == 0
+        for: 5m
+        labels:
+          severity: critical
+          component: business
+        annotations:
+          summary: "Zero transaction throughput"
+          description: "No transactions processed in the last 5 minutes"
+
+      - alert: HighGasPrice
+        expr: blockchain_gas_price > 100000000000
+        for: 5m
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "High gas price detected"
+          description: "Gas price is above 100 Gwei"
+
+      - alert: ValidatorOffline
+        expr: validator_online_status == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: business
+        annotations:
+          summary: "Validator offline"
+          description: "Validator {{ $labels.validator_address }} is offline"

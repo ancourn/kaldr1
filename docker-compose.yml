@@ -1,0 +1,294 @@
+version: '3.8'
+
+services:
+<<<<<<< HEAD
+  # Frontend Application
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: kaldrix-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - NEXT_PUBLIC_WS_URL=ws://localhost:8080
+    depends_on:
+      - backend
+    networks:
+      - kaldrix-network
+=======
+  # Blockchain Backend
+  blockchain-backend:
+    build:
+      context: .
+      dockerfile: blockchain-backend/Dockerfile
+    container_name: quantum-dag-backend
+    ports:
+      - "8080:8080"
+      - "8999:8999"
+    volumes:
+      - blockchain-data:/app/data
+    environment:
+      - RUST_LOG=info
+      - BLOCKCHAIN_PATH=/app/data
+    networks:
+      - blockchain-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend
+  blockchain-frontend:
+    build:
+      context: .
+      dockerfile: blockchain-frontend/Dockerfile
+    container_name: quantum-dag-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_BACKEND_URL=http://blockchain-backend:8080
+      - NEXT_PUBLIC_WS_URL=ws://blockchain-backend:8080/ws
+      - NODE_ENV=production
+    depends_on:
+      blockchain-backend:
+        condition: service_healthy
+    networks:
+      - blockchain-network
+>>>>>>> 28f03b7b7ee59195afe2e07f647ca52fd48e24fb
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+<<<<<<< HEAD
+  # Backend API Server
+  backend:
+    build:
+      context: ./kaldr1
+      dockerfile: Dockerfile.backend
+    container_name: kaldrix-backend
+    ports:
+      - "3001:3001"
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=postgresql://kaldrix:kaldrix_password@postgres:5432/kaldrix
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your-jwt-secret-key-here
+      - BLOCKCHAIN_NODE_URL=http://blockchain-node:8545
+      - LOG_LEVEL=info
+    depends_on:
+      - postgres
+      - redis
+      - blockchain-node
+    networks:
+      - kaldrix-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    volumes:
+      - ./kaldr1/logs:/app/logs
+      - ./kaldr1/data:/app/data
+
+  # Blockchain Core Node
+  blockchain-node:
+    build:
+      context: ./kaldr1
+      dockerfile: Dockerfile.node
+    container_name: kaldrix-blockchain
+    ports:
+      - "8545:8545"
+      - "8546:8546"
+      - "30303:30303"
+    environment:
+      - NODE_ENV=production
+      - PORT=8545
+      - DATABASE_URL=postgresql://kaldrix:kaldrix_password@postgres:5432/kaldrix
+      - NETWORK_ID=1337
+      - CHAIN_ID=1337
+      - GAS_LIMIT=8000000
+      - BLOCK_TIME=15000
+      - LOG_LEVEL=info
+    depends_on:
+      - postgres
+    networks:
+      - kaldrix-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8545"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    volumes:
+      - ./kaldr1/data:/app/data
+      - ./kaldr1/keystore:/app/keystore
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: kaldrix-postgres
+    environment:
+      - POSTGRES_DB=kaldrix
+      - POSTGRES_USER=kaldrix
+      - POSTGRES_PASSWORD=kaldrix_password
+    ports:
+      - "5432:5432"
+    networks:
+      - kaldrix-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kaldrix -d kaldrix"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./kaldr1/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: kaldrix-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - kaldrix-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  # Prometheus Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: kaldrix-prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - kaldrix-network
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+
+  # Grafana Dashboard
+  grafana:
+    image: grafana/grafana:latest
+    container_name: kaldrix-grafana
+    ports:
+      - "3001:3000"
+    networks:
+      - kaldrix-network
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin_password_here
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: kaldrix-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - kaldrix-network
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+      - backend
+      - blockchain-node
+
+  # Log Aggregation (Optional)
+  fluentd:
+    image: fluent/fluentd:v1.16-1
+    container_name: kaldrix-fluentd
+    networks:
+      - kaldrix-network
+    restart: unless-stopped
+    volumes:
+      - ./fluentd/conf:/fluentd/etc
+      - ./kaldr1/logs:/fluentd/log
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+
+networks:
+  kaldrix-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+=======
+  # Nginx Reverse Proxy (Optional)
+  nginx:
+    image: nginx:alpine
+    container_name: quantum-dag-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - blockchain-frontend
+      - blockchain-backend
+    networks:
+      - blockchain-network
+    restart: unless-stopped
+
+volumes:
+  blockchain-data:
+    driver: local
+
+networks:
+  blockchain-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+>>>>>>> 28f03b7b7ee59195afe2e07f647ca52fd48e24fb

@@ -1,0 +1,153 @@
+{{- if .Values.frontend.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: frontend
+    {{- include "kaldrix.labels" . | nindent 4 }}
+    {{- with .Values.commonLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "kaldrix.annotations" . | nindent 4 }}
+    {{- with .Values.commonAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    app: frontend
+  ports:
+    - protocol: TCP
+      port: {{ .Values.frontend.service.port }}
+      targetPort: {{ .Values.frontend.service.port }}
+  type: {{ .Values.frontend.service.type }}
+{{- end }}
+
+{{- if .Values.backend.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: backend
+    {{- include "kaldrix.labels" . | nindent 4 }}
+    {{- with .Values.commonLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "kaldrix.annotations" . | nindent 4 }}
+    {{- with .Values.commonAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    app: backend
+  ports:
+    - protocol: TCP
+      port: {{ .Values.backend.service.ports.http }}
+      targetPort: {{ .Values.backend.service.ports.http }}
+      name: http
+    - protocol: TCP
+      port: {{ .Values.backend.service.ports.websocket }}
+      targetPort: {{ .Values.backend.service.ports.websocket }}
+      name: websocket
+  type: {{ .Values.backend.service.type }}
+{{- end }}
+
+{{- if .Values.blockchain.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blockchain-service
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: blockchain-node
+    {{- include "kaldrix.labels" . | nindent 4 }}
+    {{- with .Values.commonLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "kaldrix.annotations" . | nindent 4 }}
+    {{- with .Values.commonAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    app: blockchain-node
+  ports:
+    - protocol: TCP
+      port: {{ .Values.blockchain.service.ports.rpc }}
+      targetPort: {{ .Values.blockchain.service.ports.rpc }}
+      name: rpc
+    - protocol: TCP
+      port: {{ .Values.blockchain.service.ports.wsRpc }}
+      targetPort: {{ .Values.blockchain.service.ports.wsRpc }}
+      name: ws-rpc
+    - protocol: TCP
+      port: {{ .Values.blockchain.service.ports.p2p }}
+      targetPort: {{ .Values.blockchain.service.ports.p2p }}
+      name: p2p
+  type: {{ .Values.blockchain.service.type }}
+{{- end }}
+
+{{- if not .Values.postgresql.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: postgres
+    {{- include "kaldrix.labels" . | nindent 4 }}
+    {{- with .Values.commonLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "kaldrix.annotations" . | nindent 4 }}
+    {{- with .Values.commonAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+{{- end }}
+
+{{- if not .Values.redis.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: redis
+    {{- include "kaldrix.labels" . | nindent 4 }}
+    {{- with .Values.commonLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "kaldrix.annotations" . | nindent 4 }}
+    {{- with .Values.commonAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    app: redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379
+  type: ClusterIP
+{{- end }}

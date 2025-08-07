@@ -1,0 +1,256 @@
+version: '3.8'
+
+services:
+  # Frontend Application (Staging)
+  frontend:
+    image: ghcr.io/your-org/kaldrix:staging-latest
+    container_name: kaldrix-frontend-staging
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=staging
+      - NEXT_PUBLIC_API_URL=https://staging-api.kaldrix.com
+      - NEXT_PUBLIC_WS_URL=wss://staging-ws.kaldrix.com
+    networks:
+      - kaldrix-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend-staging.rule=Host(`staging.kaldrix.com`)"
+      - "traefik.http.routers.frontend-staging.entrypoints=websecure"
+      - "traefik.http.routers.frontend-staging.tls.certresolver=myresolver"
+      - "traefik.http.services.frontend-staging.loadbalancer.server.port=3000"
+
+  # Backend API Server (Staging)
+  backend:
+    image: ghcr.io/your-org/kaldrix-backend:staging-latest
+    container_name: kaldrix-backend-staging
+    ports:
+      - "3001:3001"
+      - "8080:8080"
+    environment:
+      - NODE_ENV=staging
+      - PORT=3001
+      - DATABASE_URL=postgresql://kaldrix:${DB_PASSWORD}@postgres-staging:5432/kaldrix_staging
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis-staging:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - BLOCKCHAIN_NODE_URL=http://blockchain-node-staging:8545
+      - LOG_LEVEL=debug
+      - SENTRY_DSN=${SENTRY_DSN_STAGING}
+    depends_on:
+      - postgres-staging
+      - redis-staging
+      - blockchain-node-staging
+    networks:
+      - kaldrix-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    volumes:
+      - ./staging-logs:/app/logs
+      - ./staging-data:/app/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend-staging.rule=Host(`staging-api.kaldrix.com`)"
+      - "traefik.http.routers.backend-staging.entrypoints=websecure"
+      - "traefik.http.routers.backend-staging.tls.certresolver=myresolver"
+      - "traefik.http.services.backend-staging.loadbalancer.server.port=3001"
+      - "traefik.http.routers.ws-staging.rule=Host(`staging-ws.kaldrix.com`)"
+      - "traefik.http.routers.ws-staging.entrypoints=websecure"
+      - "traefik.http.routers.ws-staging.tls.certresolver=myresolver"
+      - "traefik.http.services.ws-staging.loadbalancer.server.port=8080"
+
+  # Blockchain Core Node (Staging)
+  blockchain-node:
+    image: ghcr.io/your-org/kaldrix-node:staging-latest
+    container_name: kaldrix-blockchain-staging
+    ports:
+      - "8545:8545"
+      - "8546:8546"
+      - "30303:30303"
+    environment:
+      - NODE_ENV=staging
+      - PORT=8545
+      - DATABASE_URL=postgresql://kaldrix:${DB_PASSWORD}@postgres-staging:5432/kaldrix_staging
+      - NETWORK_ID=1337
+      - CHAIN_ID=1337
+      - GAS_LIMIT=8000000
+      - BLOCK_TIME=15000
+      - LOG_LEVEL=debug
+      - VALIDATOR_PRIVATE_KEY=${VALIDATOR_PRIVATE_KEY_STAGING}
+    depends_on:
+      - postgres-staging
+    networks:
+      - kaldrix-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8545"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    volumes:
+      - ./staging-data:/app/data
+      - ./staging-keystore:/app/keystore
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.blockchain-staging.rule=Host(`staging-node.kaldrix.com`)"
+      - "traefik.http.routers.blockchain-staging.entrypoints=websecure"
+      - "traefik.http.routers.blockchain-staging.tls.certresolver=myresolver"
+      - "traefik.http.services.blockchain-staging.loadbalancer.server.port=8545"
+
+  # PostgreSQL Database (Staging)
+  postgres-staging:
+    image: postgres:15-alpine
+    container_name: kaldrix-postgres-staging
+    environment:
+      - POSTGRES_DB=kaldrix_staging
+      - POSTGRES_USER=kaldrix
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    networks:
+      - kaldrix-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kaldrix -d kaldrix_staging"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+      - ./kaldr1/scripts/init-staging.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # Redis Cache (Staging)
+  redis-staging:
+    image: redis:7-alpine
+    container_name: kaldrix-redis-staging
+    ports:
+      - "6379:6379"
+    networks:
+      - kaldrix-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    volumes:
+      - redis_staging_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+
+  # Prometheus Monitoring (Staging)
+  prometheus-staging:
+    image: prom/prometheus:latest
+    container_name: kaldrix-prometheus-staging
+    ports:
+      - "9090:9090"
+    networks:
+      - kaldrix-staging-network
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus-staging.yml:/etc/prometheus/prometheus.yml
+      - prometheus_staging_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus-staging.rule=Host(`staging-prometheus.kaldrix.com`)"
+      - "traefik.http.routers.prometheus-staging.entrypoints=websecure"
+      - "traefik.http.routers.prometheus-staging.tls.certresolver=myresolver"
+      - "traefik.http.services.prometheus-staging.loadbalancer.server.port=9090"
+
+  # Grafana Dashboard (Staging)
+  grafana-staging:
+    image: grafana/grafana:latest
+    container_name: kaldrix-grafana-staging
+    ports:
+      - "3001:3000"
+    networks:
+      - kaldrix-staging-network
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD_STAGING}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=https://staging-grafana.kaldrix.com
+      - GF_SERVER_DOMAIN=staging-grafana.kaldrix.com
+    volumes:
+      - grafana_staging_data:/var/lib/grafana
+      - ./monitoring/grafana-staging/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana-staging/datasources:/etc/grafana/provisioning/datasources
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana-staging.rule=Host(`staging-grafana.kaldrix.com`)"
+      - "traefik.http.routers.grafana-staging.entrypoints=websecure"
+      - "traefik.http.routers.grafana-staging.tls.certresolver=myresolver"
+      - "traefik.http.services.grafana-staging.loadbalancer.server.port=3000"
+
+  # Traefik Reverse Proxy (Staging)
+  traefik:
+    image: traefik:v2.10
+    container_name: kaldrix-traefik-staging
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - kaldrix-staging-network
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik-staging.yml:/etc/traefik/traefik.yml
+      - ./acme-staging.json:/acme.json
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=your-email@kaldrix.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/acme.json"
+
+  # Log Aggregation (Staging)
+  fluentd-staging:
+    image: fluent/fluentd:v1.16-1
+    container_name: kaldrix-fluentd-staging
+    networks:
+      - kaldrix-staging-network
+    restart: unless-stopped
+    volumes:
+      - ./fluentd/conf-staging:/fluentd/etc
+      - ./staging-logs:/fluentd/log
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+
+networks:
+  kaldrix-staging-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+
+volumes:
+  postgres_staging_data:
+    driver: local
+  redis_staging_data:
+    driver: local
+  prometheus_staging_data:
+    driver: local
+  grafana_staging_data:
+    driver: local

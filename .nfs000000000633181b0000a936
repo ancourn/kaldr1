@@ -1,0 +1,2350 @@
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): server.ts src/**/*[39m
+[33m[nodemon] watching extensions: ts,tsx,js,jsx[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+node:internal/modules/package_json_reader:134
+  const result = modulesBinding.getNearestParentPackageJSON(checkPath);
+                                ^
+
+Error: Invalid package config /home/z/my-project/package.json.
+    at Object.getNearestParentPackageJSON (node:internal/modules/package_json_reader:134:33)
+    at trySelf (node:internal/modules/cjs/loader:608:33)
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1378:24)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at node:internal/modules/cjs/loader:2045:12 {
+  code: 'ERR_INVALID_PACKAGE_CONFIG'
+}
+
+Node.js v22.17.1
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+node:internal/modules/package_json_reader:134
+  const result = modulesBinding.getNearestParentPackageJSON(checkPath);
+                                ^
+
+Error: Invalid package config /home/z/my-project/package.json.
+    at Object.getNearestParentPackageJSON (node:internal/modules/package_json_reader:134:33)
+    at trySelf (node:internal/modules/cjs/loader:608:33)
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1378:24)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at node:internal/modules/cjs/loader:2045:12 {
+  code: 'ERR_INVALID_PACKAGE_CONFIG'
+}
+
+Node.js v22.17.1
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+node:internal/modules/package_json_reader:134
+  const result = modulesBinding.getNearestParentPackageJSON(checkPath);
+                                ^
+
+Error: Invalid package config /home/z/my-project/package.json.
+    at Object.getNearestParentPackageJSON (node:internal/modules/package_json_reader:134:33)
+    at trySelf (node:internal/modules/cjs/loader:608:33)
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1378:24)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at node:internal/modules/cjs/loader:2045:12 {
+  code: 'ERR_INVALID_PACKAGE_CONFIG'
+}
+
+Node.js v22.17.1
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+node:internal/modules/package_json_reader:134
+  const result = modulesBinding.getNearestParentPackageJSON(checkPath);
+                                ^
+
+Error: Invalid package config /home/z/my-project/package.json.
+    at Object.getNearestParentPackageJSON (node:internal/modules/package_json_reader:134:33)
+    at trySelf (node:internal/modules/cjs/loader:608:33)
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1378:24)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at node:internal/modules/cjs/loader:2045:12 {
+  code: 'ERR_INVALID_PACKAGE_CONFIG'
+}
+
+Node.js v22.17.1
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+node:internal/modules/package_json_reader:134
+  const result = modulesBinding.getNearestParentPackageJSON(checkPath);
+                                ^
+
+Error: Invalid package config /home/z/my-project/package.json.
+    at Object.getNearestParentPackageJSON (node:internal/modules/package_json_reader:134:33)
+    at trySelf (node:internal/modules/cjs/loader:608:33)
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1378:24)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at node:internal/modules/cjs/loader:2045:12 {
+  code: 'ERR_INVALID_PACKAGE_CONFIG'
+}
+
+Node.js v22.17.1
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   [32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+node:internal/modules/package_json_reader:134
+  const result = modulesBinding.getNearestParentPackageJSON(checkPath);
+                                ^
+
+Error: Invalid package config /home/z/my-project/package.json.
+    at Object.getNearestParentPackageJSON (node:internal/modules/package_json_reader:134:33)
+    at trySelf (node:internal/modules/cjs/loader:608:33)
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1378:24)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at node:internal/modules/cjs/loader:2045:12 {
+  code: 'ERR_INVALID_PACKAGE_CONFIG'
+}
+
+Node.js v22.17.1
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+node:internal/modules/package_json_reader:134
+  const result = modulesBinding.getNearestParentPackageJSON(checkPath);
+                                ^
+
+Error: Invalid package config /home/z/my-project/package.json.
+    at Object.getNearestParentPackageJSON (node:internal/modules/package_json_reader:134:33)
+    at trySelf (node:internal/modules/cjs/loader:608:33)
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1378:24)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at node:internal/modules/cjs/loader:2045:12 {
+  code: 'ERR_INVALID_PACKAGE_CONFIG'
+}
+
+Node.js v22.17.1
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+(node:1055) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 exit listeners added to [Bus]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+node:internal/modules/package_json_reader:134
+  const result = modulesBinding.getNearestParentPackageJSON(checkPath);
+                                ^
+
+Error: Invalid package config /home/z/my-project/package.json.
+    at Object.getNearestParentPackageJSON (node:internal/modules/package_json_reader:134:33)
+    at trySelf (node:internal/modules/cjs/loader:608:33)
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1378:24)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at node:internal/modules/cjs/loader:2045:12 {
+  code: 'ERR_INVALID_PACKAGE_CONFIG'
+}
+
+Node.js v22.17.1
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+node:internal/modules/package_json_reader:134
+  const result = modulesBinding.getNearestParentPackageJSON(checkPath);
+                                ^
+
+Error: Invalid package config /home/z/my-project/package.json.
+    at Object.getNearestParentPackageJSON (node:internal/modules/package_json_reader:134:33)
+    at trySelf (node:internal/modules/cjs/loader:608:33)
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1378:24)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at node:internal/modules/cjs/loader:2045:12 {
+  code: 'ERR_INVALID_PACKAGE_CONFIG'
+}
+
+Node.js v22.17.1
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+node:internal/modules/package_json_reader:134
+  const result = modulesBinding.getNearestParentPackageJSON(checkPath);
+                                ^
+
+Error: Invalid package config /home/z/my-project/package.json.
+    at Object.getNearestParentPackageJSON (node:internal/modules/package_json_reader:134:33)
+    at trySelf (node:internal/modules/cjs/loader:608:33)
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1378:24)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at node:internal/modules/cjs/loader:2045:12 {
+  code: 'ERR_INVALID_PACKAGE_CONFIG'
+}
+
+Node.js v22.17.1
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+node:internal/modules/package_json_reader:134
+  const result = modulesBinding.getNearestParentPackageJSON(checkPath);
+                                ^
+
+Error: Invalid package config /home/z/my-project/package.json.
+    at Object.getNearestParentPackageJSON (node:internal/modules/package_json_reader:134:33)
+    at trySelf (node:internal/modules/cjs/loader:608:33)
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1378:24)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at node:internal/modules/cjs/loader:2045:12 {
+  code: 'ERR_INVALID_PACKAGE_CONFIG'
+}
+
+Node.js v22.17.1
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+node:internal/modules/package_json_reader:134
+  const result = modulesBinding.getNearestParentPackageJSON(checkPath);
+                                ^
+
+Error: Invalid package config /home/z/my-project/package.json.
+    at Object.getNearestParentPackageJSON (node:internal/modules/package_json_reader:134:33)
+    at trySelf (node:internal/modules/cjs/loader:608:33)
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1378:24)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at node:internal/modules/cjs/loader:2045:12 {
+  code: 'ERR_INVALID_PACKAGE_CONFIG'
+}
+
+Node.js v22.17.1
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+node:internal/modules/package_json_reader:134
+  const result = modulesBinding.getNearestParentPackageJSON(checkPath);
+                                ^
+
+Error: Invalid package config /home/z/my-project/package.json.
+    at Object.getNearestParentPackageJSON (node:internal/modules/package_json_reader:134:33)
+    at trySelf (node:internal/modules/cjs/loader:608:33)
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1378:24)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at node:internal/modules/cjs/loader:2045:12 {
+  code: 'ERR_INVALID_PACKAGE_CONFIG'
+}
+
+Node.js v22.17.1
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+node:internal/modules/package_json_reader:134
+  const result = modulesBinding.getNearestParentPackageJSON(checkPath);
+                                ^
+
+Error: Invalid package config /home/z/my-project/package.json.
+    at Object.getNearestParentPackageJSON (node:internal/modules/package_json_reader:134:33)
+    at trySelf (node:internal/modules/cjs/loader:608:33)
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1378:24)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at node:internal/modules/cjs/loader:2045:12 {
+  code: 'ERR_INVALID_PACKAGE_CONFIG'
+}
+
+Node.js v22.17.1
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+node:internal/modules/package_json_reader:134
+  const result = modulesBinding.getNearestParentPackageJSON(checkPath);
+                                ^
+
+Error: Invalid package config /home/z/my-project/package.json.
+    at Object.getNearestParentPackageJSON (node:internal/modules/package_json_reader:134:33)
+    at trySelf (node:internal/modules/cjs/loader:608:33)
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1378:24)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at node:internal/modules/cjs/loader:2045:12 {
+  code: 'ERR_INVALID_PACKAGE_CONFIG'
+}
+
+Node.js v22.17.1
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+node:internal/modules/package_json_reader:134
+  const result = modulesBinding.getNearestParentPackageJSON(checkPath);
+                                ^
+
+Error: Invalid package config /home/z/my-project/package.json.
+    at Object.getNearestParentPackageJSON (node:internal/modules/package_json_reader:134:33)
+    at trySelf (node:internal/modules/cjs/loader:608:33)
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1378:24)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at node:internal/modules/cjs/loader:2045:12 {
+  code: 'ERR_INVALID_PACKAGE_CONFIG'
+}
+
+Node.js v22.17.1
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+(node:1055) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 exit listeners added to [Bus]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+(node:1055) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 exit listeners added to [Bus]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+(node:1055) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 exit listeners added to [Bus]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+Server startup error: [Error: Unknown system error -122: Unknown system error -122, close] {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+node:fs:518
+  binding.close(fd);
+          ^
+
+Error: Unknown system error -122: Unknown system error -122, close
+    at Object.closeSync (node:fs:518:11)
+    at Object.closeSync (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:74:20)
+    at [_close] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:415:10)
+    at [_onwrite] (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:354:23)
+    at WriteStreamSync.end (/usr/lib/node_modules/npm/node_modules/fs-minipass/lib/index.js:309:21)
+    at #endStream (/usr/lib/node_modules/npm/lib/utils/log-file.js:103:23)
+    at LogFiles.off (/usr/lib/node_modules/npm/lib/utils/log-file.js:48:20)
+    at Npm.unload (/usr/lib/node_modules/npm/lib/npm.js:264:19)
+    at #handleProcesExitAndReset (/usr/lib/node_modules/npm/lib/cli/exit-handler.js:61:17)
+    at process.emit (node:events:518:28) {
+  errno: -122,
+  code: 'Unknown system error -122',
+  syscall: 'close'
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            [32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+node:internal/modules/package_json_reader:134
+  const result = modulesBinding.getNearestParentPackageJSON(checkPath);
+                                ^
+
+Error: Invalid package config /home/z/my-project/package.json.
+    at Object.getNearestParentPackageJSON (node:internal/modules/package_json_reader:134:33)
+    at trySelf (node:internal/modules/cjs/loader:608:33)
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1378:24)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at node:internal/modules/cjs/loader:2045:12 {
+  code: 'ERR_INVALID_PACKAGE_CONFIG'
+}
+
+Node.js v22.17.1

@@ -1,0 +1,411 @@
+# KALDRIX Vault Deployment Configuration
+# This manifest deploys HashiCorp Vault for the KALDRIX blockchain platform
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vault
+  labels:
+    name: vault
+    app: kaldrix
+    tier: security
+
+---
+# Vault Service Account
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault
+  namespace: vault
+  labels:
+    app: vault
+    tier: security
+
+---
+# Vault ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: vault
+  labels:
+    app: vault
+    tier: security
+rules:
+- apiGroups: [""]
+  resources: ["secrets", "configmaps", "services", "pods"]
+  verbs: ["*"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "statefulsets"]
+  verbs: ["*"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["clusterroles", "clusterrolebindings", "roles", "rolebindings"]
+  verbs: ["*"]
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["*"]
+
+---
+# Vault ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: vault
+  labels:
+    app: vault
+    tier: security
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: vault
+subjects:
+- kind: ServiceAccount
+  name: vault
+  namespace: vault
+
+---
+# Vault ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-config
+  namespace: vault
+  labels:
+    app: vault
+    tier: security
+data:
+  vault.hcl: |
+    # KALDRIX Vault Configuration
+    storage "file" {
+      path = "/vault/file"
+    }
+    
+    listener "tcp" {
+      address     = "0.0.0.0:8200"
+      tls_cert_file = "/vault/config/tls.crt"
+      tls_key_file  = "/vault/config/tls.key"
+      tls_disable = false
+    }
+    
+    api_addr = "https://vault.vault.svc.cluster.local:8200"
+    cluster_addr = "https://vault.vault.svc.cluster.local:8201"
+    
+    default_lease_ttl = "168h"
+    max_lease_ttl = "720h"
+    
+    ui = true
+    cluster_name = "kaldrix-vault"
+    disable_mlock = true
+    
+    plugin_directory = "/vault/plugins"
+    
+    service_registration "kubernetes" {}
+    
+    telemetry {
+      prometheus_retention_time = "30s"
+      disable_hostname = true
+      disable_service_metrics = false
+      enable_agent_metrics = true
+      use_agent_metrics = true
+      statsd_address = "localhost:8125"
+    }
+    
+    log_level = "info"
+    log_format = "json"
+    
+    audit "file" {
+      path = "/vault/audit/audit.log"
+      mode = "0640"
+      format = "json"
+      hmac_key = "hmac-key"
+    }
+    
+    performance {
+      request_max_duration = "90s"
+      request_max_size = 33554432
+      response_max_size = 33554432
+    }
+    
+    rate_limit {
+      rate = 1000
+      burst = 2000
+    }
+    
+    cors {
+      enabled = true
+      allowed_origins = ["https://vault.kaldrix.com", "https://kaldrix.com", "https://*.kaldrix.com"]
+      allowed_headers = ["X-Requested-With", "X-Vault-Token", "X-Vault-Namespace", "Content-Type"]
+      allowed_methods = ["GET", "POST", "PUT", "DELETE"]
+    }
+
+---
+# Vault Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault
+  namespace: vault
+  labels:
+    app: vault
+    tier: security
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 8200
+    targetPort: 8200
+    protocol: TCP
+  - name: cluster
+    port: 8201
+    targetPort: 8201
+    protocol: TCP
+  selector:
+    app: vault
+    tier: security
+
+---
+# Vault StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vault
+  namespace: vault
+  labels:
+    app: vault
+    tier: security
+spec:
+  serviceName: vault
+  replicas: 3
+  selector:
+    matchLabels:
+      app: vault
+      tier: security
+  template:
+    metadata:
+      labels:
+        app: vault
+        tier: security
+    spec:
+      serviceAccountName: vault
+      containers:
+      - name: vault
+        image: hashicorp/vault:1.15.0
+        imagePullPolicy: IfNotPresent
+        command: ["vault", "server", "-config=/vault/config/vault.hcl"]
+        env:
+        - name: VAULT_ADDR
+          value: "https://127.0.0.1:8200"
+        - name: VAULT_API_ADDR
+          value: "https://vault.vault.svc.cluster.local:8200"
+        - name: VAULT_CLUSTER_ADDR
+          value: "https://vault.vault.svc.cluster.local:8201"
+        - name: SKIP_SETCAP
+          value: "true"
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        ports:
+        - containerPort: 8200
+          name: http
+        - containerPort: 8201
+          name: cluster
+        volumeMounts:
+        - name: vault-config
+          mountPath: /vault/config
+        - name: vault-file
+          mountPath: /vault/file
+        - name: vault-raft
+          mountPath: /vault/raft
+        - name: vault-audit
+          mountPath: /vault/audit
+        - name: vault-plugins
+          mountPath: /vault/plugins
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /v1/sys/health
+            port: 8200
+            scheme: HTTPS
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /v1/sys/health
+            port: 8200
+            scheme: HTTPS
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+      volumes:
+      - name: vault-config
+        configMap:
+          name: vault-config
+      - name: vault-file
+        emptyDir: {}
+      - name: vault-raft
+        emptyDir: {}
+      - name: vault-audit
+        emptyDir: {}
+      - name: vault-plugins
+        emptyDir: {}
+
+---
+# Vault Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vault-ingress
+  namespace: vault
+  labels:
+    app: vault
+    tier: security
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/ssl-protocols: "TLSv1.2,TLSv1.3"
+    nginx.ingress.kubernetes.io/ssl-ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_ssl_server_name on;
+      proxy_ssl_protocols TLSv1.2 TLSv1.3;
+      proxy_ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
+spec:
+  tls:
+  - hosts:
+    - vault.kaldrix.com
+    secretName: vault-tls
+  rules:
+  - host: vault.kaldrix.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: vault
+            port:
+              number: 8200
+
+---
+# Vault Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: vault-hpa
+  namespace: vault
+  labels:
+    app: vault
+    tier: security
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: StatefulSet
+    name: vault
+  minReplicas: 3
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+      selectPolicy: Max
+
+---
+# Vault Pod Disruption Budget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: vault-pdb
+  namespace: vault
+  labels:
+    app: vault
+    tier: security
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: vault
+      tier: security
+
+---
+# Vault Network Policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: vault-network-policy
+  namespace: vault
+  labels:
+    app: vault
+    tier: security
+spec:
+  podSelector:
+    matchLabels:
+      app: vault
+      tier: security
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: vault
+    - namespaceSelector:
+        matchLabels:
+          app: kaldrix
+    ports:
+    - protocol: TCP
+      port: 8200
+    - protocol: TCP
+      port: 8201
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: vault
+    - namespaceSelector:
+        matchLabels:
+          app: kaldrix
+    ports:
+    - protocol: TCP
+      port: 8200
+    - protocol: TCP
+      port: 8201

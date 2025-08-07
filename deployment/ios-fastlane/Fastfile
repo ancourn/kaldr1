@@ -1,0 +1,417 @@
+# iOS Fastlane Configuration
+# This file contains all the fastlane configuration for iOS deployment
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Build and upload to App Store Connect"
+  lane :release do
+    # Ensure git status is clean
+    ensure_git_status_clean
+    
+    # Increment build number
+    increment_build_number(xcodeproj: "KaldrixWallet.xcodeproj")
+    
+    # Match certificates and provisioning profiles
+    match(
+      type: "appstore",
+      app_identifier: "com.kaldrix.wallet",
+      git_url: "git@github.com:kaldrix/certificates.git",
+      readonly: true
+    )
+    
+    # Build the app
+    gym(
+      scheme: "KaldrixWallet",
+      workspace: "KaldrixWallet.xcworkspace",
+      configuration: "Release",
+      export_method: "app-store",
+      include_symbols: true,
+      include_bitcode: false
+    )
+    
+    # Upload to App Store Connect
+    upload_to_app_store(
+      skip_metadata: false,
+      skip_screenshots: false,
+      force: true,
+      submit_for_review: true,
+      automatic_release: true,
+      phased_release: true,
+      release_notes: {
+        "default" => "Welcome to KALDRIX v1.0.0! This is our initial release featuring complete quantum-resistant wallet functionality, support for major cryptocurrencies, advanced security features, biometric authentication, real-time transaction processing, portfolio tracking, staking capabilities, NFT management, multi-wallet support, and comprehensive transaction history."
+      }
+    )
+    
+    # Create GitHub release
+    set_github_release(
+      repository_name: "kaldrix/kaldrix-mobile",
+      api_token: ENV["GITHUB_TOKEN"],
+      name: "iOS v#{get_version_number}",
+      tag_name: "ios-v#{get_version_number}",
+      description: "iOS App Store Release v#{get_version_number}",
+      commitish: "main",
+      is_draft: false,
+      is_prerelease: false
+    )
+    
+    # Notify team
+    slack(
+      message: "Successfully released iOS app v#{get_version_number} to App Store Connect!",
+      success: true,
+      slack_url: ENV["SLACK_WEBHOOK_URL"]
+    )
+  end
+  
+  desc "Build for TestFlight"
+  lane :beta do
+    # Ensure git status is clean
+    ensure_git_status_clean
+    
+    # Increment build number
+    increment_build_number(xcodeproj: "KaldrixWallet.xcodeproj")
+    
+    # Match certificates and provisioning profiles
+    match(
+      type: "appstore",
+      app_identifier: "com.kaldrix.wallet",
+      git_url: "git@github.com:kaldrix/certificates.git",
+      readonly: true
+    )
+    
+    # Build the app
+    gym(
+      scheme: "KaldrixWallet",
+      workspace: "KaldrixWallet.xcworkspace",
+      configuration: "Release",
+      export_method: "app-store",
+      include_symbols: true,
+      include_bitcode: false
+    )
+    
+    # Upload to TestFlight
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true,
+      distribute_external: true,
+      groups: ["Beta Testers", "Internal Team"]
+    )
+    
+    # Notify team
+    slack(
+      message: "Successfully uploaded iOS app v#{get_version_number} to TestFlight!",
+      success: true,
+      slack_url: ENV["SLACK_WEBHOOK_URL"]
+    )
+  end
+  
+  desc "Run all tests"
+  lane :test do
+    run_tests(
+      workspace: "KaldrixWallet.xcworkspace",
+      devices: ["iPhone 14", "iPhone 14 Pro", "iPhone 14 Pro Max"],
+      scheme: "KaldrixWallet"
+    )
+  end
+  
+  desc "Run unit tests"
+  lane :test_unit do
+    run_tests(
+      workspace: "KaldrixWallet.xcworkspace",
+      devices: ["iPhone 14"],
+      scheme: "KaldrixWallet",
+      only_testing: "KaldrixWalletUnitTests"
+    )
+  end
+  
+  desc "Run integration tests"
+  lane :test_integration do
+    run_tests(
+      workspace: "KaldrixWallet.xcworkspace",
+      devices: ["iPhone 14"],
+      scheme: "KaldrixWallet",
+      only_testing: "KaldrixWalletIntegrationTests"
+    )
+  end
+  
+  desc "Run UI tests"
+  lane :test_ui do
+    run_tests(
+      workspace: "KaldrixWallet.xcworkspace",
+      devices: ["iPhone 14"],
+      scheme: "KaldrixWallet",
+      only_testing: "KaldrixWalletUITests"
+    )
+  end
+  
+  desc "Run performance tests"
+  lane :test_performance do
+    run_tests(
+      workspace: "KaldrixWallet.xcworkspace",
+      devices: ["iPhone 14"],
+      scheme: "KaldrixWallet",
+      only_testing: "KaldrixWalletPerformanceTests"
+    )
+  end
+  
+  desc "Generate screenshots"
+  lane :screenshots do
+    capture_ios_screenshots(
+      workspace: "KaldrixWallet.xcworkspace",
+      scheme: "KaldrixWallet",
+      devices: [
+        "iPhone 14",
+        "iPhone 14 Pro",
+        "iPhone 14 Pro Max",
+        "iPad Pro (12.9-inch) (6th generation)",
+        "iPad Pro (11-inch) (4th generation)"
+      ]
+    )
+    
+    # Frame screenshots
+    frameit(
+      path: "./fastlane/screenshots"
+    )
+  end
+  
+  desc "Increment version number"
+  lane :increment_version do
+    # Increment version number
+    increment_version_number(
+      bump_type: "patch" # major, minor, patch
+    )
+    
+    # Commit version bump
+    commit_version_bump(
+      xcodeproj: "KaldrixWallet.xcodeproj",
+      message: "Bump version to #{get_version_number}"
+    )
+    
+    # Push to remote
+    push_to_git_remote
+  end
+  
+  desc "Update app metadata"
+  lane :update_metadata do
+    # Download current metadata
+    download_app_metadata(
+      app_identifier: "com.kaldrix.wallet"
+    )
+    
+    # Update metadata (you would modify the downloaded files)
+    # Then upload back to App Store Connect
+    upload_app_metadata(
+      app_identifier: "com.kaldrix.wallet"
+    )
+  end
+  
+  desc "Precheck before submission"
+  lane :precheck do
+    precheck(
+      app_identifier: "com.kaldrix.wallet",
+      username: ENV["FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD"]
+    )
+  end
+  
+  desc "Get app version"
+  lane :get_version do
+    version = get_version_number(xcodeproj: "KaldrixWallet.xcodeproj")
+    build = get_build_number(xcodeproj: "KaldrixWallet.xcodeproj")
+    
+    puts "App Version: #{version}"
+    puts "Build Number: #{build}"
+    
+    # Return version for use in other lanes
+    return version
+  end
+  
+  desc "Clean build artifacts"
+  lane :clean do
+    # Clean derived data
+    clear_derived_data
+    
+    # Clean Xcode build folder
+    sh "rm -rf ~/Library/Developer/Xcode/DerivedData"
+    
+    # Clean fastlane cache
+    sh "rm -rf ~/Library/Caches/fastlane"
+    
+    puts "Cleaned all build artifacts"
+  end
+  
+  desc "Setup certificates and provisioning profiles"
+  lane :certificates do
+    match(
+      type: "appstore",
+      app_identifier: "com.kaldrix.wallet",
+      git_url: "git@github.com:kaldrix/certificates.git",
+      readonly: false,
+      force_for_new_devices: true
+    )
+  end
+  
+  desc "Sync certificates"
+  lane :sync_certificates do
+    sync_code_signing(
+      type: "appstore",
+      app_identifier: "com.kaldrix.wallet",
+      git_url: "git@github.com:kaldrix/certificates.git"
+    )
+  end
+  
+  desc "Build for Ad Hoc distribution"
+  lane :adhoc do
+    match(
+      type: "adhoc",
+      app_identifier: "com.kaldrix.wallet",
+      git_url: "git@github.com:kaldrix/certificates.git",
+      readonly: true
+    )
+    
+    gym(
+      scheme: "KaldrixWallet",
+      workspace: "KaldrixWallet.xcworkspace",
+      configuration: "Release",
+      export_method: "ad-hoc",
+      include_symbols: true,
+      include_bitcode: false
+    )
+  end
+  
+  desc "Build for Development"
+  lane :dev do
+    match(
+      type: "development",
+      app_identifier: "com.kaldrix.wallet",
+      git_url: "git@github.com:kaldrix/certificates.git",
+      readonly: true
+    )
+    
+    gym(
+      scheme: "KaldrixWallet",
+      workspace: "KaldrixWallet.xcworkspace",
+      configuration: "Debug",
+      export_method: "development",
+      include_symbols: true,
+      include_bitcode: false
+    )
+  end
+  
+  desc "Run security checks"
+  lane :security do
+    # Run security audit
+    sh "npm audit --audit-level=moderate"
+    
+    # Run dependency check
+    dependency_check(
+      project_path: ".",
+      scheme: "KaldrixWallet",
+      output_format: "HTML"
+    )
+    
+    # Run static analysis
+    swiftlint(
+      mode: :lint,
+      output_file: "swiftlint-report.xml",
+      config_file: ".swiftlint.yml"
+    )
+  end
+  
+  desc "Generate code coverage report"
+  lane :coverage do
+    # Run tests with coverage
+    scan(
+      workspace: "KaldrixWallet.xcworkspace",
+      scheme: "KaldrixWallet",
+      devices: ["iPhone 14"],
+      code_coverage: true,
+      output_directory: "test_output"
+    )
+    
+    # Generate coverage report
+    slather(
+      cobertura_xml: true,
+      jenkins: true,
+      output_directory: "test_output/coverage",
+      scheme: "KaldrixWallet",
+      workspace: "KaldrixWallet.xcworkspace"
+    )
+  end
+  
+  desc "Generate documentation"
+  lane :docs do
+    # Generate Swift documentation
+    jazzy(
+      config: ".jazzy.yaml"
+    )
+  end
+  
+  desc "Validate app before release"
+  lane :validate do
+    # Run all tests
+    test
+    
+    # Run security checks
+    security
+    
+    # Generate coverage report
+    coverage
+    
+    # Precheck app
+    precheck
+    
+    puts "App validation completed successfully!"
+  end
+  
+  desc "Hotfix deployment"
+  lane :hotfix do
+    # Ensure we're on hotfix branch
+    ensure_git_branch(
+      branch: "hotfix/*"
+    )
+    
+    # Increment patch version
+    increment_version_number(
+      bump_type: "patch"
+    )
+    
+    # Run tests
+    test
+    
+    # Build and upload
+    release
+    
+    # Merge back to main
+    merge_hotfix_branch
+  end
+  
+  desc "Merge hotfix branch"
+  private_lane :merge_hotfix_branch do
+    # Get current branch name
+    branch_name = git_branch
+    
+    # Checkout main branch
+    sh "git checkout main"
+    
+    # Merge hotfix branch
+    sh "git merge #{branch_name}"
+    
+    # Push to remote
+    push_to_git_remote
+    
+    # Delete hotfix branch
+    sh "git branch -d #{branch_name}"
+    sh "git push origin --delete #{branch_name}"
+  end
+  
+  error do |lane, exception|
+    # Send error notification to Slack
+    slack(
+      message: "Error in lane #{lane}: #{exception.message}",
+      success: false,
+      slack_url: ENV["SLACK_WEBHOOK_URL"]
+    )
+    
+    # Re-raise exception
+    raise exception
+  end
+end

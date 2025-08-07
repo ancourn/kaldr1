@@ -1,0 +1,80 @@
+{{- if .Values.storage }}
+{{- if not .Values.postgresql.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "kaldrix.fullname" . }}-postgres-pvc
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: postgres
+    {{- include "kaldrix.labels" . | nindent 4 }}
+    {{- with .Values.commonLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "kaldrix.annotations" . | nindent 4 }}
+    {{- with .Values.commonAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.storage.postgresSize }}
+  storageClassName: {{ .Values.storage.className }}
+{{- end }}
+
+{{- if not .Values.redis.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "kaldrix.fullname" . }}-redis-pvc
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: redis
+    {{- include "kaldrix.labels" . | nindent 4 }}
+    {{- with .Values.commonLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "kaldrix.annotations" . | nindent 4 }}
+    {{- with .Values.commonAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.storage.redisSize }}
+  storageClassName: {{ .Values.storage.className }}
+{{- end }}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "kaldrix.fullname" . }}-data-pvc
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: blockchain-node
+    {{- include "kaldrix.labels" . | nindent 4 }}
+    {{- with .Values.commonLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "kaldrix.annotations" . | nindent 4 }}
+    {{- with .Values.commonAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.storage.blockchainSize }}
+  storageClassName: {{ .Values.storage.className }}
+{{- end }}

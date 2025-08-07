@@ -1,0 +1,79 @@
+# KALDRIX DNS Configuration
+# This file contains the DNS records for production deployment
+
+# Main Domain Records
+kaldrix.io.    IN    A     192.168.1.100    # Main application server
+www.kaldrix.io. IN    CNAME kaldrix.io.     # WWW redirect
+
+# API Subdomain
+api.kaldrix.io. IN    A     192.168.1.101    # API server
+
+# Monitoring Subdomain
+monitoring.kaldrix.io. IN    A     192.168.1.102    # Monitoring server
+
+# Email Records (MX)
+kaldrix.io.    IN    MX    10    mail.kaldrix.io.
+
+# Email Security Records
+kaldrix.io.    IN    TXT    "v=spf1 include:_spf.google.com ~all"
+kaldrix.io.    IN    TXT    "v=DMARC1; p=quarantine; rua=mailto:dmarc@kaldrix.io; ruf=mailto:dmarc@kaldrix.io"
+
+# Security Headers
+kaldrix.io.    IN    CAA    0 issue "letsencrypt.org"
+
+# Blockchain Node Records (for future use)
+node1.kaldrix.io. IN    A     192.168.1.110
+node2.kaldrix.io. IN    A     192.168.1.111
+node3.kaldrix.io. IN    A     192.168.1.112
+
+# Developer Portal
+dev.kaldrix.io. IN    A     192.168.1.120
+docs.kaldrix.io. IN    A     192.168.1.121
+
+# Content Delivery Network
+cdn.kaldrix.io. IN    CNAME    kaldrix.cdn.cloudflare.net.
+
+# Git Repository
+git.kaldrix.io. IN    A     192.168.1.130
+
+# Backup Server
+backup.kaldrix.io. IN    A     192.168.1.140
+
+# Database Servers (private network)
+db-primary.kaldrix.io. IN    A     10.0.1.10
+db-replica.kaldrix.io. IN    A     10.0.1.11
+
+# Cache Servers
+redis.kaldrix.io. IN    A     10.0.1.20
+memcached.kaldrix.io. IN    A     10.0.1.21
+
+# Load Balancer
+lb.kaldrix.io. IN    A     192.168.1.150
+
+# Internal Services (private network)
+consul.kaldrix.io. IN    A     10.0.1.30
+vault.kaldrix.io. IN    A     10.0.1.31
+nomad.kaldrix.io. IN    A     10.0.1.32
+
+# Monitoring Services (private network)
+prometheus.kaldrix.io. IN    A     10.0.1.40
+grafana.kaldrix.io. IN    A     10.0.1.41
+alertmanager.kaldrix.io. IN    A     10.0.1.42
+
+# Logging Services
+elasticsearch.kaldrix.io. IN    A     10.0.1.50
+kibana.kaldrix.io. IN    A     10.0.1.51
+logstash.kaldrix.io. IN    A     10.0.1.52
+
+# Security Services
+waf.kaldrix.io. IN    A     192.168.1.160
+ids.kaldrix.io. IN    A     10.0.1.60
+
+# Development Environment
+staging.kaldrix.io. IN    A     192.168.1.200
+test.kaldrix.io. IN    A     192.168.1.201
+
+# IPv6 Records (when available)
+kaldrix.io.    IN    AAAA    2001:db8::1
+www.kaldrix.io. IN    AAAA    2001:db8::1
+api.kaldrix.io. IN    AAAA    2001:db8::2

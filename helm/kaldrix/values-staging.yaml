@@ -1,0 +1,360 @@
+# Staging environment values for KALDRIX Helm chart
+
+# Global configuration
+global:
+  environment: "staging"
+  namespace: "kaldrix-staging"
+
+# Common labels and annotations
+commonLabels:
+  environment: "staging"
+  app: "kaldrix-blockchain-staging"
+
+commonAnnotations:
+  environment: "staging"
+  documentation: "https://docs.kaldrix.com/staging"
+
+# Resource limits and requests (reduced for staging)
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "250m"
+  limits:
+    memory: "1Gi"
+    cpu: "500m"
+
+# Storage configuration (reduced for staging)
+storage:
+  className: "standard"
+  postgresSize: "20Gi"
+  redisSize: "5Gi"
+  blockchainSize: "50Gi"
+
+# Networking configuration for staging
+networking:
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: "/"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      cert-manager.io/cluster-issuer: "letsencrypt-staging"
+      nginx.ingress.kubernetes.io/rate-limit: "50"
+      nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    hosts:
+      - host: staging.kaldrix.com
+        paths:
+          - path: "/"
+            pathType: "Prefix"
+            service: "frontend-service"
+            port: 3000
+      - host: api-staging.kaldrix.com
+        paths:
+          - path: "/"
+            pathType: "Prefix"
+            service: "backend-service"
+            port: 3001
+      - host: ws-staging.kaldrix.com
+        paths:
+          - path: "/"
+            pathType: "Prefix"
+            service: "backend-service"
+            port: 8080
+      - host: node-staging.kaldrix.com
+        paths:
+          - path: "/"
+            pathType: "Prefix"
+            service: "blockchain-service"
+            port: 8545
+    tls:
+      - secretName: "kaldrix-staging-tls"
+        hosts:
+          - "staging.kaldrix.com"
+          - "api-staging.kaldrix.com"
+          - "ws-staging.kaldrix.com"
+          - "node-staging.kaldrix.com"
+
+# Frontend configuration for staging
+frontend:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: "kaldrix"
+    tag: "staging"
+    pullPolicy: "Always"
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+  env:
+    NODE_ENV: "staging"
+    NEXT_PUBLIC_API_URL: "https://api-staging.kaldrix.com"
+    NEXT_PUBLIC_WS_URL: "wss://ws-staging.kaldrix.com"
+
+# Backend configuration for staging
+backend:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: "kaldrix-backend"
+    tag: "staging"
+    pullPolicy: "Always"
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+    targetRequestsPerSecond: 500
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+  env:
+    NODE_ENV: "staging"
+    LOG_LEVEL: "info"
+    NETWORK_ID: "2"
+    CHAIN_ID: "2"
+    GAS_LIMIT: "8000000"
+    BLOCK_TIME: "15000"
+
+# Blockchain node configuration for staging
+blockchain:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: "kaldrix-node"
+    tag: "staging"
+    pullPolicy: "Always"
+  resources:
+    requests:
+      memory: "2Gi"
+      cpu: "1000m"
+    limits:
+      memory: "4Gi"
+      cpu: "2000m"
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 2
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 90
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+  env:
+    NODE_ENV: "staging"
+    LOG_LEVEL: "info"
+    NETWORK_ID: "2"
+    CHAIN_ID: "2"
+    GAS_LIMIT: "8000000"
+    BLOCK_TIME: "15000"
+
+# PostgreSQL configuration for staging
+postgresql:
+  enabled: true
+  global:
+    postgresql:
+      auth:
+        postgresPassword: ""
+        database: "kaldrix_staging"
+        username: "kaldrix"
+  primary:
+    persistence:
+      enabled: true
+      storageClass: "standard"
+      size: "20Gi"
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+# Redis configuration for staging
+redis:
+  enabled: true
+  global:
+    redis:
+      password: ""
+  master:
+    persistence:
+      enabled: true
+      storageClass: "standard"
+      size: "5Gi"
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+# Prometheus configuration for staging
+prometheus:
+  enabled: true
+  server:
+    persistentVolume:
+      enabled: true
+      storageClass: "standard"
+      size: "10Gi"
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+    retention: "7d"
+  alertmanager:
+    enabled: true
+    persistentVolume:
+      enabled: true
+      storageClass: "standard"
+      size: "2Gi"
+
+# Grafana configuration for staging
+grafana:
+  enabled: true
+  adminPassword: "staging-admin"
+  persistence:
+    enabled: true
+    storageClass: "standard"
+    size: "5Gi"
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+# Monitoring and alerting for staging
+monitoring:
+  enabled: true
+  serviceAccount:
+    create: true
+    name: "kaldrix-monitoring-staging"
+  alerts:
+    enabled: true
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected in staging"
+          description: "CPU usage is above 85% for 10 minutes on instance {{ $labels.instance }}"
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 90
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected in staging"
+          description: "Memory usage is above 90% for 10 minutes on instance {{ $labels.instance }}"
+
+# Security configuration for staging
+security:
+  podSecurityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
+  containerSecurityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+  networkPolicy:
+    enabled: true
+    egressRules:
+      - to: []
+        ports: []
+    ingressRules:
+      - from: []
+        ports: []
+
+# Secrets management for staging
+secrets:
+  enabled: true
+  externalSecrets:
+    enabled: false
+    vault:
+      enabled: false
+      address: ""
+      role: ""
+      path: ""
+
+# Health checks for staging
+healthChecks:
+  enabled: true
+  livenessProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# Zero-downtime deployment for staging
+zeroDowntime:
+  enabled: true
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  terminationGracePeriodSeconds: 30
+
+# Backup and recovery for staging
+backup:
+  enabled: false
+  schedule: "0 3 * * *"
+  retention: "3d"
+  storage:
+    className: "standard"
+    size: "50Gi"
+
+# Logging configuration for staging
+logging:
+  enabled: true
+  level: "debug"
+  format: "json"
+  fluentd:
+    enabled: false
+  loki:
+    enabled: false

@@ -1,0 +1,30 @@
+{
+  "entryPoints": [
+    "src/lib/blockchain-service.ts"
+  ],
+  "out": "docs/api",
+  "name": "KALDRIX Blockchain API",
+  "readme": "README.md",
+  "exclude": [
+    "**/node_modules/**",
+    "**/legacy-tests/**",
+    "**/.next/**",
+    "**/kaldr1/**",
+    "**/legacy/**",
+    "**/tests/**",
+    "**/incentive/**"
+  ],
+  "excludePrivate": true,
+  "excludeProtected": false,
+  "excludeInternal": false,
+  "hideGenerator": true,
+  "disableSources": true,
+  "includeVersion": true,
+  "plugin": ["typedoc-plugin-markdown"],
+  "markdown": {
+    "outputFileExtension": ".md"
+  },
+  "theme": "default",
+  "tsconfig": "./tsconfig.json",
+  "sort": ["source-order"]
+}

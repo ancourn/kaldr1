@@ -1,0 +1,108 @@
+{
+  "name": "kaldrix-mainnet",
+  "network_id": "1",
+  "chain_id": "kaldrix-mainnet-1",
+  "genesis_time": "2024-12-15T00:00:00Z",
+  "initial_validators": [
+    {
+      "id": "validator1",
+      "address": "0x742d35Cc6634C0532925a3b844Bc9e7595f8e8B4",
+      "public_key": "dilithium3_pubkey_1",
+      "stake": "1000000000000000000000",
+      "commission_rate": 5,
+      "description": "KALDRIX Foundation Validator 1",
+      "endpoint": "validator1.mainnet.kaldrix.com:8443"
+    },
+    {
+      "id": "validator2", 
+      "address": "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
+      "public_key": "dilithium3_pubkey_2",
+      "stake": "1000000000000000000000",
+      "commission_rate": 5,
+      "description": "KALDRIX Foundation Validator 2",
+      "endpoint": "validator2.mainnet.kaldrix.com:8443"
+    },
+    {
+      "id": "validator3",
+      "address": "0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2",
+      "public_key": "dilithium3_pubkey_3", 
+      "stake": "1000000000000000000000",
+      "commission_rate": 5,
+      "description": "KALDRIX Foundation Validator 3",
+      "endpoint": "validator3.mainnet.kaldrix.com:8443"
+    },
+    {
+      "id": "validator4",
+      "address": "0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db",
+      "public_key": "dilithium3_pubkey_4",
+      "stake": "1000000000000000000000",
+      "commission_rate": 5,
+      "description": "KALDRIX Foundation Validator 4",
+      "endpoint": "validator4.mainnet.kaldrix.com:8443"
+    }
+  ],
+  "token_distribution": {
+    "total_supply": "1000000000000000000000000000",
+    "initial_distribution": [
+      {
+        "address": "0x742d35Cc6634C0532925a3b844Bc9e7595f8e8B4",
+        "amount": "400000000000000000000000000",
+        "description": "Foundation Treasury"
+      },
+      {
+        "address": "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
+        "amount": "300000000000000000000000000",
+        "description": "Ecosystem Development"
+      },
+      {
+        "address": "0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2",
+        "amount": "150000000000000000000000000",
+        "description": "Team Allocation"
+      },
+      {
+        "address": "0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db",
+        "amount": "150000000000000000000000000",
+        "description": "Community Rewards"
+      }
+    ]
+  },
+  "consensus_params": {
+    "block_time": 2,
+    "epoch_length": 86400,
+    "validator_set_size": 4,
+    "min_stake_amount": "1000000000000000000000",
+    "max_validators": 100,
+    "unbonding_period": 604800,
+    "quantum_resistant": true,
+    "key_rotation_interval": 7776000
+  },
+  "dag_params": {
+    "max_parents": 8,
+    "max_transactions_per_unit": 100,
+    "conflict_resolution_threshold": 0.67,
+    "finality_threshold": 0.8,
+    "sync_batch_size": 1000
+  },
+  "governance_params": {
+    "proposal_threshold": "10000000000000000000000",
+    "voting_period": 604800,
+    "execution_delay": 86400,
+    "quorum_threshold": 0.5,
+    "approval_threshold": 0.67,
+    "veto_threshold": 0.33
+  },
+  "bootstrap_nodes": [
+    "bootstrap1.mainnet.kaldrix.com:8443",
+    "bootstrap2.mainnet.kaldrix.com:8443", 
+    "bootstrap3.mainnet.kaldrix.com:8443"
+  ],
+  "api_endpoints": [
+    "api.mainnet.kaldrix.com:443",
+    "api2.mainnet.kaldrix.com:443",
+    "api3.mainnet.kaldrix.com:443"
+  ],
+  "explorer_url": "https://explorer.mainnet.kaldrix.com",
+  "faucet_url": "https://faucet.mainnet.kaldrix.com",
+  "documentation_url": "https://docs.kaldrix.com",
+  "support_url": "https://support.kaldrix.com"
+}

@@ -1,0 +1,502 @@
+# Android Fastlane Configuration
+# This file contains all the fastlane configuration for Android deployment
+
+default_platform(:android)
+
+platform :android do
+  desc "Build and upload to Google Play Store"
+  lane :release do
+    # Ensure git status is clean
+    ensure_git_status_clean
+    
+    # Increment version code
+    increment_version_code(
+      gradle_file: "app/build.gradle"
+    )
+    
+    # Build the app
+    gradle(
+      task: "assembleProductionRelease",
+      flavor: "production"
+    )
+    
+    # Upload to Google Play Store
+    upload_to_play_store(
+      track: "production",
+      release_status: "draft",
+      aab: "app/build/outputs/bundle/productionRelease/app-production-release.aab",
+      changelog: "Welcome to KALDRIX v1.0.0! This is our initial release featuring complete quantum-resistant wallet functionality, support for major cryptocurrencies, advanced security features, biometric authentication, real-time transaction processing, portfolio tracking, staking capabilities, NFT management, multi-wallet support, and comprehensive transaction history."
+    )
+    
+    # Create GitHub release
+    set_github_release(
+      repository_name: "kaldrix/kaldrix-mobile",
+      api_token: ENV["GITHUB_TOKEN"],
+      name: "Android v#{get_version_name}",
+      tag_name: "android-v#{get_version_name}",
+      description: "Android Play Store Release v#{get_version_name}",
+      commitish: "main",
+      is_draft: false,
+      is_prerelease: false
+    )
+    
+    # Notify team
+    slack(
+      message: "Successfully released Android app v#{get_version_name} to Google Play Store!",
+      success: true,
+      slack_url: ENV["SLACK_WEBHOOK_URL"]
+    )
+  end
+  
+  desc "Build for internal testing"
+  lane :beta do
+    # Ensure git status is clean
+    ensure_git_status_clean
+    
+    # Increment version code
+    increment_version_code(
+      gradle_file: "app/build.gradle"
+    )
+    
+    # Build the app
+    gradle(
+      task: "assembleStagingRelease",
+      flavor: "staging"
+    )
+    
+    # Upload to Google Play Store for internal testing
+    upload_to_play_store(
+      track: "internal",
+      aab: "app/build/outputs/bundle/stagingRelease/app-staging-release.aab",
+      release_status: "draft",
+      changelog: "Beta release for testing new features and bug fixes."
+    )
+    
+    # Notify team
+    slack(
+      message: "Successfully uploaded Android app v#{get_version_name} to internal testing!",
+      success: true,
+      slack_url: ENV["SLACK_WEBHOOK_URL"]
+    )
+  end
+  
+  desc "Build for closed testing"
+  lane :closed_beta do
+    # Ensure git status is clean
+    ensure_git_status_clean
+    
+    # Increment version code
+    increment_version_code(
+      gradle_file: "app/build.gradle"
+    )
+    
+    # Build the app
+    gradle(
+      task: "assembleStagingRelease",
+      flavor: "staging"
+    )
+    
+    # Upload to Google Play Store for closed testing
+    upload_to_play_store(
+      track: "beta",
+      release_status: "draft",
+      aab: "app/build/outputs/bundle/stagingRelease/app-staging-release.aab",
+      changelog: "Closed beta release for selected testers.",
+      testing_groups: ["beta-testers", "internal-team"]
+    )
+    
+    # Notify team
+    slack(
+      message: "Successfully uploaded Android app v#{get_version_name} to closed testing!",
+      success: true,
+      slack_url: ENV["SLACK_WEBHOOK_URL"]
+    )
+  end
+  
+  desc "Build for open testing"
+  lane :open_beta do
+    # Ensure git status is clean
+    ensure_git_status_clean
+    
+    # Increment version code
+    increment_version_code(
+      gradle_file: "app/build.gradle"
+    )
+    
+    # Build the app
+    gradle(
+      task: "assembleStagingRelease",
+      flavor: "staging"
+    )
+    
+    # Upload to Google Play Store for open testing
+    upload_to_play_store(
+      track: "beta",
+      release_status: "draft",
+      aab: "app/build/outputs/bundle/stagingRelease/app-staging-release.aab",
+      changelog: "Open beta release - anyone can join and test the app!",
+      testing_groups: ["open-beta"]
+    )
+    
+    # Notify team
+    slack(
+      message: "Successfully uploaded Android app v#{get_version_name} to open testing!",
+      success: true,
+      slack_url: ENV["SLACK_WEBHOOK_URL"]
+    )
+  end
+  
+  desc "Run all tests"
+  lane :test do
+    gradle(task: "test")
+    gradle(task: "connectedCheck")
+  end
+  
+  desc "Run unit tests"
+  lane :test_unit do
+    gradle(task: "testDebugUnitTest")
+  end
+  
+  desc "Run integration tests"
+  lane :test_integration do
+    gradle(task: "connectedDebugAndroidTest")
+  end
+  
+  desc "Run instrumentation tests"
+  lane :test_instrumentation do
+    gradle(task: "connectedAndroidTest")
+  end
+  
+  desc "Run lint checks"
+  lane :lint do
+    gradle(task: "lint")
+  end
+  
+  desc "Generate screenshots"
+  lane :screenshots do
+    capture_android_screenshots(
+      app_package_name: "com.kaldrix.wallet",
+      app_apk_path: "app/build/outputs/apk/production/debug/app-production-debug.apk",
+      tests_apk_path: "app/build/outputs/apk/androidTest/production/debug/app-production-debug-androidTest.apk",
+      use_tests_in_packages: ["com.kaldrix.wallet.screenshots"],
+      locales: ["en-US", "es-ES", "fr-FR", "de-DE", "ja-JP"],
+      clear_previous_screenshots: true,
+      output_directory: "fastlane/screenshots"
+    )
+    
+    # Frame screenshots
+    frameit(
+      path: "./fastlane/screenshots"
+    )
+  end
+  
+  desc "Increment version number"
+  lane :increment_version do
+    # Read current version
+    current_version = get_version_name(
+      gradle_file: "app/build.gradle",
+      flavor: "production"
+    )
+    
+    # Parse version and increment
+    version_parts = current_version.split(".")
+    version_parts[2] = (version_parts[2].to_i + 1).to_s
+    new_version = version_parts.join(".")
+    
+    # Update version name
+    increment_version_name(
+      gradle_file: "app/build.gradle",
+      version_name: new_version,
+      flavor: "production"
+    )
+    
+    # Commit version bump
+    git_commit(
+      path: ["app/build.gradle"],
+      message: "Bump version to #{new_version}"
+    )
+    
+    # Push to remote
+    push_to_git_remote
+    
+    puts "Version incremented to #{new_version}"
+  end
+  
+  desc "Update app metadata"
+  lane :update_metadata do
+    # Download current metadata
+    download_from_play_store(
+      package_name: "com.kaldrix.wallet",
+      metadata_path: "fastlane/metadata"
+    )
+    
+    # Update metadata (you would modify the downloaded files)
+    # Then upload back to Play Store
+    upload_to_play_store(
+      package_name: "com.kaldrix.wallet",
+      metadata_path: "fastlane/metadata",
+      track: "production"
+    )
+  end
+  
+  desc "Get app version"
+  lane :get_version do
+    version_name = get_version_name(
+      gradle_file: "app/build.gradle",
+      flavor: "production"
+    )
+    version_code = get_version_code(
+      gradle_file: "app/build.gradle",
+      flavor: "production"
+    )
+    
+    puts "App Version: #{version_name}"
+    puts "Version Code: #{version_code}"
+    
+    # Return version for use in other lanes
+    return version_name
+  end
+  
+  desc "Clean build artifacts"
+  lane :clean do
+    gradle(task: "clean")
+    
+    # Clean build directories
+    sh "rm -rf app/build"
+    sh "rm -rf build"
+    
+    puts "Cleaned all build artifacts"
+  end
+  
+  desc "Setup signing configuration"
+  lane :setup_signing do
+    # Create keystore if it doesn't exist
+    unless File.exist?("app/kaldrix-release.keystore")
+      sh "keytool -genkey -v -keystore app/kaldrix-release.keystore -storepass #{ENV["KEYSTORE_PASSWORD"]} -alias kaldrix -keypass #{ENV["KEY_PASSWORD"]} -keyalg RSA -keysize 2048 -validity 10000 -dname 'CN=KALDRIX, OU=Mobile, O=KALDRIX, L=San Francisco, ST=California, C=US'"
+    end
+    
+    puts "Signing configuration setup completed"
+  end
+  
+  desc "Build debug APK"
+  lane :build_debug do
+    gradle(
+      task: "assembleStagingDebug",
+      flavor: "staging"
+    )
+    
+    puts "Debug APK built successfully"
+  end
+  
+  desc "Build release APK"
+  lane :build_release do
+    gradle(
+      task: "assembleProductionRelease",
+      flavor: "production"
+    )
+    
+    puts "Release APK built successfully"
+  end
+  
+  desc "Build release AAB"
+  lane :build_bundle do
+    gradle(
+      task: "bundleProductionRelease",
+      flavor: "production"
+    )
+    
+    puts "Release AAB built successfully"
+  end
+  
+  desc "Run security checks"
+  lane :security do
+    # Run security audit
+    sh "npm audit --audit-level=moderate"
+    
+    # Run dependency check
+    dependency_check(
+      project_path: ".",
+      output_format: "HTML"
+    )
+    
+    # Run static analysis
+    android_lint(
+      severity: "Warning",
+      output_file: "lint-report.xml"
+    )
+    
+    puts "Security checks completed"
+  end
+  
+  desc "Generate code coverage report"
+  lane :coverage do
+    # Run tests with coverage
+    gradle(
+      task: "createDebugCoverageReport",
+      flavor: "staging"
+    )
+    
+    puts "Code coverage report generated"
+  end
+  
+  desc "Generate documentation"
+  lane :docs do
+    # Generate Java/Kotlin documentation
+    gradle(
+      task: "dokka"
+    )
+    
+    puts "Documentation generated"
+  end
+  
+  desc "Validate app before release"
+  lane :validate do
+    # Run all tests
+    test
+    
+    # Run lint checks
+    lint
+    
+    # Run security checks
+    security
+    
+    # Generate coverage report
+    coverage
+    
+    puts "App validation completed successfully!"
+  end
+  
+  desc "Hotfix deployment"
+  lane :hotfix do
+    # Ensure we're on hotfix branch
+    ensure_git_branch(
+      branch: "hotfix/*"
+    )
+    
+    # Increment patch version
+    increment_version
+    
+    # Run tests
+    test
+    
+    # Build and upload
+    release
+    
+    # Merge back to main
+    merge_hotfix_branch
+  end
+  
+  desc "Merge hotfix branch"
+  private_lane :merge_hotfix_branch do
+    # Get current branch name
+    branch_name = git_branch
+    
+    # Checkout main branch
+    sh "git checkout main"
+    
+    # Merge hotfix branch
+    sh "git merge #{branch_name}"
+    
+    # Push to remote
+    push_to_git_remote
+    
+    # Delete hotfix branch
+    sh "git branch -d #{branch_name}"
+    sh "git push origin --delete #{branch_name}"
+  end
+  
+  desc "A/B test rollout"
+  lane :ab_test do
+    upload_to_play_store(
+      track: "production",
+      release_status: "draft",
+      aab: "app/build/outputs/bundle/productionRelease/app-production-release.aab",
+      rollout: "0.1", # 10% rollout
+      changelog: "A/B test release - new features and improvements."
+    )
+    
+    puts "A/B test rollout started with 10% of users"
+  end
+  
+  desc "Staged rollout"
+  lane :staged_rollout do
+    upload_to_play_store(
+      track: "production",
+      release_status: "draft",
+      aab: "app/build/outputs/bundle/productionRelease/app-production-release.aab",
+      rollout: "0.01", # 1% initial rollout
+      changelog: "Staged rollout - gradual release to all users."
+    )
+    
+    puts "Staged rollout started with 1% of users"
+  end
+  
+  desc "Promote staged rollout"
+  lane :promote_rollout do
+    # Get current release
+    release = google_play_track_release(
+      track: "production",
+      package_name: "com.kaldrix.wallet"
+    )
+    
+    # Increase rollout percentage
+    upload_to_play_store(
+      track: "production",
+      release_status: "draft",
+      aab: "app/build/outputs/bundle/productionRelease/app-production-release.aab",
+      rollout: "0.5", # 50% rollout
+      changelog: "Promoting staged rollout to 50% of users."
+    )
+    
+    puts "Staged rollout promoted to 50% of users"
+  end
+  
+  desc "Complete rollout"
+  lane :complete_rollout do
+    upload_to_play_store(
+      track: "production",
+      release_status: "draft",
+      aab: "app/build/outputs/bundle/productionRelease/app-production-release.aab",
+      rollout: "1.0", # 100% rollout
+      changelog: "Rollout completed - available to all users."
+    )
+    
+    puts "Rollout completed - available to 100% of users"
+  end
+  
+  desc "Halt rollout"
+  lane :halt_rollout do
+    # Halt the current rollout
+    google_play_track_release(
+      track: "production",
+      package_name: "com.kaldrix.wallet",
+      status: "halted"
+    )
+    
+    puts "Rollout halted"
+  end
+  
+  desc "Resume rollout"
+  lane :resume_rollout do
+    # Resume the halted rollout
+    google_play_track_release(
+      track: "production",
+      package_name: "com.kaldrix.wallet",
+      status: "inProgress"
+    )
+    
+    puts "Rollout resumed"
+  end
+  
+  error do |lane, exception|
+    # Send error notification to Slack
+    slack(
+      message: "Error in lane #{lane}: #{exception.message}",
+      success: false,
+      slack_url: ENV["SLACK_WEBHOOK_URL"]
+    )
+    
+    # Re-raise exception
+    raise exception
+  end
+end

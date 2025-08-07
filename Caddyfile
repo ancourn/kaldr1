@@ -1,0 +1,287 @@
+# Caddy Configuration for Quantum-Proof DAG Blockchain
+# Provides automatic TLS, reverse proxy, and load balancing
+
+{
+    # Global options
+    admin :2019
+    log {
+        output file /var/log/caddy/access.log
+        level INFO
+    }
+    servers {
+        protocols h1 h2 h3
+    }
+}
+
+# Main blockchain server
+quantum-dag.example.com {
+    # Automatic TLS with Let's Encrypt
+    tls {
+        ca https://acme-v02.api.letsencrypt.org/directory
+        email admin@quantum-dag.example.com
+    }
+    
+    # Security headers
+    header {
+        # HSTS
+        Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+        
+        # Other security headers
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        
+        # Remove server info
+        -Server
+    }
+    
+    # Rate limiting
+    rate_limit {
+        zone static {
+            key {remote_host}
+            events 100
+            window 1m
+        }
+    }
+    
+    # Health check endpoint
+    handle /health {
+        reverse_proxy localhost:8080 {
+            # Health check specific settings
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            
+            # Health check configuration
+            health_uri /health
+            health_interval 30s
+            health_timeout 5s
+        }
+    }
+    
+    # Metrics endpoint (restricted access)
+    handle /metrics {
+        # Basic authentication for metrics
+        basic_auth "prometheus:secure_metrics_password"
+        
+        # IP restrictions
+        @allowed_ip expression remote_host == "127.0.0.1" || 
+                            remote_host == "10.0.0.0/8" || 
+                            remote_host == "172.16.0.0/12" || 
+                            remote_host == "192.168.0.0/16"
+        route @allowed_ip {
+            reverse_proxy localhost:8080 {
+                header_up Host {host}
+                header_up X-Real-IP {remote_host}
+                header_up X-Forwarded-For {remote_host}
+                header_up X-Forwarded-Proto {scheme}
+            }
+        }
+        
+        # Deny other IPs
+        respond "Access Denied" 403
+    }
+    
+    # WebSocket support
+    handle /api/socketio/* {
+        reverse_proxy localhost:8080 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            
+            # WebSocket specific settings
+            header_up Upgrade {>Upgrade}
+            header_up Connection {>Connection}
+        }
+    }
+    
+    # Main API reverse proxy
+    handle {
+        # Apply rate limiting
+        rate_limit static
+        
+        reverse_proxy localhost:8080 {
+            # Load balancing
+            lb_policy round_robin
+            lb_try_duration 5s
+            
+            # Headers
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            
+            # Timeouts
+            fail_timeout 30s
+            max_fails 3
+            
+            # Health checks
+            health_uri /health
+            health_interval 30s
+            health_timeout 5s
+            health_status 2xx
+            
+            # Connection settings
+            keepalive 32
+            keepalive_idle 30s
+        }
+    }
+    
+    # Static files (if any)
+    handle /static/* {
+        root * /var/www/blockchain/static
+        file_server
+        
+        # Cache headers
+        header Cache-Control "public, max-age=31536000, immutable"
+    }
+    
+    # Security: Block access to sensitive files
+    handle /\.(db|sql|backup|meta|log|conf)$/ {
+        respond "Access Denied" 403
+    }
+    
+    # Security: Block access to hidden files
+    handle /.well-known/acme-challenge/* {
+        root * /var/www/certbot
+        file_server
+    }
+    
+    handle /.htaccess {
+        respond "Access Denied" 403
+    }
+}
+
+# API-specific subdomain
+api.quantum-dag.example.com {
+    tls {
+        ca https://acme-v02.api.letsencrypt.org/directory
+        email admin@quantum-dag.example.com
+    }
+    
+    # Security headers
+    header {
+        Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
+    }
+    
+    # Stricter rate limiting for API
+    rate_limit {
+        zone api {
+            key {remote_host}
+            events 50
+            window 1m
+        }
+    }
+    
+    # CORS headers for API
+    @options method OPTIONS
+    handle @options {
+        header {
+            Access-Control-Allow-Origin "*"
+            Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+            Access-Control-Allow-Headers "Content-Type, Authorization"
+            Access-Control-Max-Age "1728000"
+        }
+        respond "" 204
+    }
+    
+    # API reverse proxy
+    handle {
+        # Apply API rate limiting
+        rate_limit api
+        
+        reverse_proxy localhost:8080 {
+            # Load balancing
+            lb_policy round_robin
+            lb_try_duration 5s
+            
+            # Headers
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            
+            # CORS headers
+            header_up Access-Control-Allow-Origin "*"
+            header_up Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+            header_up Access-Control-Allow-Headers "Content-Type, Authorization"
+            
+            # Timeouts (shorter for API)
+            fail_timeout 30s
+            max_fails 3
+            
+            # Health checks
+            health_uri /health
+            health_interval 30s
+            health_timeout 5s
+            health_status 2xx
+            
+            # Connection settings
+            keepalive 32
+            keepalive_idle 30s
+        }
+    }
+}
+
+# Monitoring subdomain (optional)
+monitor.quantum-dag.example.com {
+    tls {
+        ca https://acme-v02.api.letsencrypt.org/directory
+        email admin@quantum-dag.example.com
+    }
+    
+    # Security headers
+    header {
+        Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
+    }
+    
+    # Basic authentication for monitoring
+    basic_auth {
+        # Username:password pairs
+        admin "secure_monitoring_password"
+    }
+    
+    # Reverse proxy to monitoring services
+    reverse_proxy localhost:3000 {
+        # Grafana or other monitoring tools
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}
+
+# Development environment (optional, for local testing)
+localhost:80 {
+    # No TLS for local development
+    bind localhost:80
+    
+    # Development headers
+    header {
+        X-Debug "true"
+        -Server
+    }
+    
+    # Disable rate limiting in development
+    handle {
+        reverse_proxy localhost:8080 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto "http"
+        }
+    }
+}

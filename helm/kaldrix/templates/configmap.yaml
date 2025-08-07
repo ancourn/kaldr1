@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "kaldrix.fullname" . }}-config
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "kaldrix.labels" . | nindent 4 }}
+    {{- with .Values.commonLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "kaldrix.annotations" . | nindent 4 }}
+    {{- with .Values.commonAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+data:
+  NODE_ENV: {{ .Values.global.environment | quote }}
+  LOG_LEVEL: {{ .Values.backend.env.LOG_LEVEL | default "warn" | quote }}
+  NETWORK_ID: {{ .Values.backend.env.NETWORK_ID | default "1" | quote }}
+  CHAIN_ID: {{ .Values.backend.env.CHAIN_ID | default "1" | quote }}
+  GAS_LIMIT: {{ .Values.backend.env.GAS_LIMIT | default "8000000" | quote }}
+  BLOCK_TIME: {{ .Values.backend.env.BLOCK_TIME | default "15000" | quote }}
+  {{- if .Values.frontend.env }}
+  {{- range $key, $value := .Values.frontend.env }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+  {{- end }}
+  {{- if .Values.backend.env }}
+  {{- range $key, $value := .Values.backend.env }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+  {{- end }}
+  {{- if .Values.blockchain.env }}
+  {{- range $key, $value := .Values.blockchain.env }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+  {{- end }}

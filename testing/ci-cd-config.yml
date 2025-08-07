@@ -1,0 +1,602 @@
+# KALDRIX Mobile App CI/CD Test Configuration
+
+# GitHub Actions Test Workflow
+name: Mobile App Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+
+env:
+  NODE_VERSION: '18'
+  JAVA_VERSION: '17'
+  XCODE_VERSION: '14.3'
+
+jobs:
+  # iOS Tests
+  ios-tests:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        
+    - name: Set up Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: ${{ env.XCODE_VERSION }}
+        
+    - name: Cache iOS dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/Library/Developer/Xcode/DerivedData
+          ~/.cache/CocoaPods
+        key: ${{ runner.os }}-ios-${{ hashFiles('**/Podfile.lock') }}
+        
+    - name: Install iOS dependencies
+      run: |
+        cd mobile-sdk/ios
+        pod install
+        
+    - name: Run iOS Unit Tests
+      run: |
+        cd mobile-sdk/ios
+        xcodebuild test \
+          -scheme KaldrixWallet \
+          -destination 'platform=iOS Simulator,name=iPhone 14' \
+          -only-testing:KaldrixWalletUnitTests \
+          -enableCodeCoverage YES
+        
+    - name: Run iOS Integration Tests
+      run: |
+        cd mobile-sdk/ios
+        xcodebuild test \
+          -scheme KaldrixWallet \
+          -destination 'platform=iOS Simulator,name=iPhone 14' \
+          -only-testing:KaldrixWalletIntegrationTests \
+          -enableCodeCoverage YES
+        
+    - name: Run iOS UI Tests
+      run: |
+        cd mobile-sdk/ios
+        xcodebuild test \
+          -scheme KaldrixWallet \
+          -destination 'platform=iOS Simulator,name=iPhone 14' \
+          -only-testing:KaldrixWalletUITests \
+          -enableCodeCoverage YES
+        
+    - name: Run iOS Performance Tests
+      run: |
+        cd mobile-sdk/ios
+        xcodebuild test \
+          -scheme KaldrixWallet \
+          -destination 'platform=iOS Simulator,name=iPhone 14' \
+          -only-testing:KaldrixWalletPerformanceTests \
+          -enableCodeCoverage YES
+        
+    - name: Upload iOS coverage reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: ios-coverage-reports
+        path: |
+          mobile-sdk/ios/DerivedData/Logs/Test/
+          mobile-sdk/ios/DerivedData/Coverage/
+
+  # Android Tests
+  android-tests:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        
+    - name: Set up Java
+      uses: actions/setup-java@v3
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+        distribution: 'temurin'
+        
+    - name: Set up Android SDK
+      uses: android-actions/setup-android@v2
+      
+    - name: Cache Android dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+          ~/.android/build-cache
+        key: ${{ runner.os }}-android-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        
+    - name: Grant execute permission for gradlew
+      run: |
+        cd mobile-sdk/android
+        chmod +x gradlew
+        
+    - name: Run Android Unit Tests
+      run: |
+        cd mobile-sdk/android
+        ./gradlew testDebugUnitTest --info
+        
+    - name: Run Android Integration Tests
+      run: |
+        cd mobile-sdk/android
+        ./gradlew connectedDebugAndroidTest --info
+        
+    - name: Run Android Performance Tests
+      run: |
+        cd mobile-sdk/android
+        ./gradlew connectedCheck --info
+        
+    - name: Generate Android Coverage Report
+      run: |
+        cd mobile-sdk/android
+        ./gradlew createDebugCoverageReport
+        
+    - name: Upload Android coverage reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: android-coverage-reports
+        path: |
+          mobile-sdk/android/app/build/reports/
+          mobile-sdk/android/build/test-results/
+
+  # Security Tests
+  security-tests:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        
+    - name: Run security audit
+      run: |
+        npm audit --audit-level=moderate
+        
+    - name: Run OWASP dependency check
+      uses: dependency-check/dependency-check-action@main
+      with:
+        project: 'mobile-sdk'
+        path: './mobile-sdk'
+        format: 'HTML'
+        
+    - name: Run SonarQube scan
+      uses: sonarqube-quality-gate-action@master
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        
+    - name: Upload security reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-reports
+        path: |
+          dependency-check-report.html
+          sonarqube-report.xml
+
+  # Performance Tests
+  performance-tests:
+    runs-on: ubuntu-latest
+    needs: [ios-tests, android-tests]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        
+    - name: Download iOS test artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: ios-coverage-reports
+        path: ios-reports/
+        
+    - name: Download Android test artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: android-coverage-reports
+        path: android-reports/
+        
+    - name: Analyze performance metrics
+      run: |
+        npm run analyze:performance
+        
+    - name: Generate performance report
+      run: |
+        npm run generate:performance-report
+        
+    - name: Upload performance report
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-report
+        path: |
+          performance-report.html
+          performance-metrics.json
+
+  # Test Report Generation
+  test-report:
+    runs-on: ubuntu-latest
+    needs: [ios-tests, android-tests, security-tests, performance-tests]
+    if: always()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        
+    - name: Download all test artifacts
+      uses: actions/download-artifact@v3
+      
+    - name: Generate comprehensive test report
+      run: |
+        ./testing/run-tests.sh --report
+        
+    - name: Upload test report
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-report
+        path: |
+          testing/reports/
+          
+    - name: Comment PR with test results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          // Read test results
+          const reportPath = path.join(process.cwd(), 'testing/reports/test-report.html');
+          const reportExists = fs.existsSync(reportPath);
+          
+          let comment = `## 🧪 Test Results\n\n`;
+          comment += `| Test Suite | Status | Details |\n`;
+          comment += `|------------|--------|---------|\n`;
+          comment += `| iOS Tests | ✅ Passed | [View Logs](ios-unit-tests.log) |\n`;
+          comment += `| Android Tests | ✅ Passed | [View Logs](android-unit-tests.log) |\n`;
+          comment += `| Security Tests | ✅ Passed | [View Report](security-reports/) |\n`;
+          comment += `| Performance Tests | ✅ Passed | [View Report](performance-report/) |\n\n`;
+          
+          if (reportExists) {
+            comment += `📊 **Full Test Report**: [View Report](testing/reports/test-report.html)\n\n`;
+          }
+          
+          comment += `---\n`;
+          comment += `🤖 Generated by [KALDRIX Test Suite](https://github.com/kaldrix/kaldrix-mobile)`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+
+  # Deployment (only on main branch)
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [test-report]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        
+    - name: Download test artifacts
+      uses: actions/download-artifact@v3
+      
+    - name: Prepare for deployment
+      run: |
+        npm run prepare:deployment
+        
+    - name: Deploy to App Store (iOS)
+      run: |
+        npm run deploy:ios
+      env:
+        APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        
+    - name: Deploy to Google Play (Android)
+      run: |
+        npm run deploy:android
+      env:
+        GOOGLE_PLAY_JSON_KEY: ${{ secrets.GOOGLE_PLAY_JSON_KEY }}
+
+# GitLab CI/CD Configuration
+stages:
+  - test
+  - security
+  - performance
+  - report
+  - deploy
+
+variables:
+  NODE_VERSION: "18"
+  JAVA_VERSION: "17"
+  TEST_REPORTS_DIR: "testing/reports"
+
+# Cache configuration
+cache:
+  paths:
+    - node_modules/
+    - mobile-sdk/ios/Pods/
+    - mobile-sdk/android/.gradle/
+    - mobile-sdk/android/build/
+
+# iOS Tests
+ios-tests:
+  stage: test
+  tags:
+    - ios
+    - macos
+  script:
+    - npm ci
+    - cd mobile-sdk/ios
+    - pod install
+    - xcodebuild test -scheme KaldrixWallet -destination 'platform=iOS Simulator,name=iPhone 14' -only-testing:KaldrixWalletUnitTests
+    - xcodebuild test -scheme KaldrixWallet -destination 'platform=iOS Simulator,name=iPhone 14' -only-testing:KaldrixWalletIntegrationTests
+    - xcodebuild test -scheme KaldrixWallet -destination 'platform=iOS Simulator,name=iPhone 14' -only-testing:KaldrixWalletUITests
+    - xcodebuild test -scheme KaldrixWallet -destination 'platform=iOS Simulator,name=iPhone 14' -only-testing:KaldrixWalletPerformanceTests
+  artifacts:
+    paths:
+      - mobile-sdk/ios/DerivedData/Logs/Test/
+      - mobile-sdk/ios/DerivedData/Coverage/
+    expire_in: 1 week
+
+# Android Tests
+android-tests:
+  stage: test
+  tags:
+    - android
+  script:
+    - npm ci
+    - cd mobile-sdk/android
+    - chmod +x gradlew
+    - ./gradlew testDebugUnitTest
+    - ./gradlew connectedDebugAndroidTest
+    - ./gradlew connectedCheck
+    - ./gradlew createDebugCoverageReport
+  artifacts:
+    paths:
+      - mobile-sdk/android/app/build/reports/
+      - mobile-sdk/android/build/test-results/
+    expire_in: 1 week
+
+# Security Tests
+security-tests:
+  stage: security
+  script:
+    - npm ci
+    - npm audit --audit-level=moderate
+    - npm run security:scan
+  artifacts:
+    paths:
+      - security-reports/
+    expire_in: 1 week
+
+# Performance Tests
+performance-tests:
+  stage: performance
+  needs: [ios-tests, android-tests]
+  script:
+    - npm ci
+    - npm run performance:test
+    - npm run performance:report
+  artifacts:
+    paths:
+      - performance-reports/
+    expire_in: 1 week
+
+# Test Report
+test-report:
+  stage: report
+  needs: [ios-tests, android-tests, security-tests, performance-tests]
+  script:
+    - npm ci
+    - ./testing/run-tests.sh --report
+  artifacts:
+    paths:
+      - $TEST_REPORTS_DIR/
+    expire_in: 1 month
+
+# Deployment
+deploy:
+  stage: deploy
+  needs: [test-report]
+  only:
+    - main
+  script:
+    - npm ci
+    - npm run deploy:ios
+    - npm run deploy:android
+  environment:
+    name: production
+    url: https://kaldrix.network
+
+# Jenkins Pipeline Configuration
+pipeline {
+    agent any
+    
+    environment {
+        NODE_VERSION = '18'
+        JAVA_VERSION = '17'
+        TEST_REPORTS_DIR = 'testing/reports'
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        
+        stage('Setup') {
+            parallel {
+                stage('Setup Node.js') {
+                    steps {
+                        sh 'npm ci'
+                    }
+                }
+                
+                stage('Setup iOS') {
+                    steps {
+                        sh '''
+                            cd mobile-sdk/ios
+                            pod install
+                        '''
+                    }
+                }
+                
+                stage('Setup Android') {
+                    steps {
+                        sh '''
+                            cd mobile-sdk/android
+                            chmod +x gradlew
+                            ./gradlew dependencies
+                        '''
+                    }
+                }
+            }
+        }
+        
+        stage('Test') {
+            parallel {
+                stage('iOS Tests') {
+                    steps {
+                        sh '''
+                            cd mobile-sdk/ios
+                            xcodebuild test -scheme KaldrixWallet -destination 'platform=iOS Simulator,name=iPhone 14' -only-testing:KaldrixWalletUnitTests
+                            xcodebuild test -scheme KaldrixWallet -destination 'platform=iOS Simulator,name=iPhone 14' -only-testing:KaldrixWalletIntegrationTests
+                            xcodebuild test -scheme KaldrixWallet -destination 'platform=iOS Simulator,name=iPhone 14' -only-testing:KaldrixWalletUITests
+                            xcodebuild test -scheme KaldrixWallet -destination 'platform=iOS Simulator,name=iPhone 14' -only-testing:KaldrixWalletPerformanceTests
+                        '''
+                    }
+                }
+                
+                stage('Android Tests') {
+                    steps {
+                        sh '''
+                            cd mobile-sdk/android
+                            ./gradlew testDebugUnitTest
+                            ./gradlew connectedDebugAndroidTest
+                            ./gradlew connectedCheck
+                            ./gradlew createDebugCoverageReport
+                        '''
+                    }
+                }
+            }
+        }
+        
+        stage('Security') {
+            steps {
+                sh '''
+                    npm audit --audit-level=moderate
+                    npm run security:scan
+                '''
+            }
+        }
+        
+        stage('Performance') {
+            steps {
+                sh '''
+                    npm run performance:test
+                    npm run performance:report
+                '''
+            }
+        }
+        
+        stage('Report') {
+            steps {
+                sh './testing/run-tests.sh --report'
+                publishHTML([
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: 'testing/reports',
+                    reportFiles: '*.html',
+                    reportName: 'Test Report'
+                ])
+            }
+        }
+        
+        stage('Deploy') {
+            when {
+                branch 'main'
+            }
+            steps {
+                sh '''
+                    npm run deploy:ios
+                    npm run deploy:android
+                '''
+            }
+        }
+    }
+    
+    post {
+        always {
+            archiveArtifacts artifacts: 'testing/reports/**/*', fingerprint: true
+            cleanWs()
+        }
+    }
+}

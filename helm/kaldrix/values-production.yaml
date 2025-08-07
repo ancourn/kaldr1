@@ -1,0 +1,540 @@
+# Production environment values for KALDRIX Helm chart
+
+# Global configuration
+global:
+  environment: "production"
+  namespace: "kaldrix"
+
+# Common labels and annotations
+commonLabels:
+  environment: "production"
+  app: "kaldrix-blockchain"
+
+commonAnnotations:
+  environment: "production"
+  documentation: "https://docs.kaldrix.com"
+  maintainers: "KALDRIX Team <team@kaldrix.com>"
+
+# Resource limits and requests (optimized for production)
+resources:
+  requests:
+    memory: "2Gi"
+    cpu: "1000m"
+  limits:
+    memory: "4Gi"
+    cpu: "2000m"
+
+# Storage configuration (optimized for production)
+storage:
+  className: "premium-ssd"
+  postgresSize: "100Gi"
+  redisSize: "20Gi"
+  blockchainSize: "200Gi"
+
+# Networking configuration for production
+networking:
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: "/"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      nginx.ingress.kubernetes.io/rate-limit: "200"
+      nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+      nginx.ingress.kubernetes.io/limit-connections: "100"
+      nginx.ingress.kubernetes.io/limit-rps: "50"
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        more_set_headers "X-Content-Type-Options: nosniff";
+        more_set_headers "X-Frame-Options: DENY";
+        more_set_headers "X-XSS-Protection: 1; mode=block";
+        more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+        more_set_headers "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';";
+    hosts:
+      - host: kaldrix.com
+        paths:
+          - path: "/"
+            pathType: "Prefix"
+            service: "frontend-service"
+            port: 3000
+      - host: api.kaldrix.com
+        paths:
+          - path: "/"
+            pathType: "Prefix"
+            service: "backend-service"
+            port: 3001
+      - host: ws.kaldrix.com
+        paths:
+          - path: "/"
+            pathType: "Prefix"
+            service: "backend-service"
+            port: 8080
+      - host: node.kaldrix.com
+        paths:
+          - path: "/"
+            pathType: "Prefix"
+            service: "blockchain-service"
+            port: 8545
+    tls:
+      - secretName: "kaldrix-tls"
+        hosts:
+          - "kaldrix.com"
+          - "api.kaldrix.com"
+          - "ws.kaldrix.com"
+          - "node.kaldrix.com"
+
+# Frontend configuration for production
+frontend:
+  enabled: true
+  replicaCount: 5
+  image:
+    repository: "kaldrix"
+    tag: "latest"
+    pullPolicy: "IfNotPresent"
+  service:
+    type: "ClusterIP"
+    port: 3000
+  resources:
+    requests:
+      memory: "2Gi"
+      cpu: "1000m"
+    limits:
+      memory: "4Gi"
+      cpu: "2000m"
+  autoscaling:
+    enabled: true
+    minReplicas: 5
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 3
+  env:
+    NODE_ENV: "production"
+    NEXT_PUBLIC_API_URL: "https://api.kaldrix.com"
+    NEXT_PUBLIC_WS_URL: "wss://ws.kaldrix.com"
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - frontend
+          topologyKey: "kubernetes.io/hostname"
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - frontend
+            topologyKey: "failure-domain.beta.kubernetes.io/zone"
+
+# Backend configuration for production
+backend:
+  enabled: true
+  replicaCount: 3
+  image:
+    repository: "kaldrix-backend"
+    tag: "latest"
+    pullPolicy: "IfNotPresent"
+  service:
+    type: "ClusterIP"
+    ports:
+      http: 3001
+      websocket: 8080
+  resources:
+    requests:
+      memory: "4Gi"
+      cpu: "2000m"
+    limits:
+      memory: "8Gi"
+      cpu: "4000m"
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 15
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+    targetRequestsPerSecond: 2000
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
+  env:
+    NODE_ENV: "production"
+    LOG_LEVEL: "warn"
+    NETWORK_ID: "1"
+    CHAIN_ID: "1"
+    GAS_LIMIT: "8000000"
+    BLOCK_TIME: "15000"
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - backend
+          topologyKey: "kubernetes.io/hostname"
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - backend
+            topologyKey: "failure-domain.beta.kubernetes.io/zone"
+
+# Blockchain node configuration for production
+blockchain:
+  enabled: true
+  replicaCount: 3
+  image:
+    repository: "kaldrix-node"
+    tag: "latest"
+    pullPolicy: "IfNotPresent"
+  service:
+    type: "ClusterIP"
+    ports:
+      rpc: 8545
+      wsRpc: 8546
+      p2p: 30303
+  resources:
+    requests:
+      memory: "8Gi"
+      cpu: "4000m"
+    limits:
+      memory: "16Gi"
+      cpu: "8000m"
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 90
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
+  env:
+    NODE_ENV: "production"
+    LOG_LEVEL: "warn"
+    NETWORK_ID: "1"
+    CHAIN_ID: "1"
+    GAS_LIMIT: "8000000"
+    BLOCK_TIME: "15000"
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - blockchain-node
+          topologyKey: "kubernetes.io/hostname"
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - blockchain-node
+            topologyKey: "failure-domain.beta.kubernetes.io/zone"
+
+# PostgreSQL configuration for production
+postgresql:
+  enabled: true
+  global:
+    postgresql:
+      auth:
+        postgresPassword: ""
+        database: "kaldrix_prod"
+        username: "kaldrix"
+  primary:
+    persistence:
+      enabled: true
+      storageClass: "premium-ssd"
+      size: "100Gi"
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2000m"
+      limits:
+        memory: "8Gi"
+        cpu: "4000m"
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - postgresql
+            topologyKey: "kubernetes.io/hostname"
+  readReplicas:
+    replicaCount: 2
+    persistence:
+      enabled: true
+      storageClass: "premium-ssd"
+      size: "100Gi"
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "1000m"
+      limits:
+        memory: "4Gi"
+        cpu: "2000m"
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+# Redis configuration for production
+redis:
+  enabled: true
+  global:
+    redis:
+      password: ""
+  master:
+    persistence:
+      enabled: true
+      storageClass: "premium-ssd"
+      size: "20Gi"
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "1000m"
+      limits:
+        memory: "4Gi"
+        cpu: "2000m"
+  replica:
+    replicaCount: 2
+    persistence:
+      enabled: true
+      storageClass: "premium-ssd"
+      size: "20Gi"
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+# Prometheus configuration for production
+prometheus:
+  enabled: true
+  server:
+    persistentVolume:
+      enabled: true
+      storageClass: "premium-ssd"
+      size: "50Gi"
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2000m"
+      limits:
+        memory: "8Gi"
+        cpu: "4000m"
+    retention: "30d"
+    retentionSize: "50GB"
+  alertmanager:
+    enabled: true
+    persistentVolume:
+      enabled: true
+      storageClass: "premium-ssd"
+      size: "10Gi"
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+
+# Grafana configuration for production
+grafana:
+  enabled: true
+  adminPassword: ""
+  persistence:
+    enabled: true
+    storageClass: "premium-ssd"
+    size: "20Gi"
+  resources:
+    requests:
+      memory: "2Gi"
+        cpu: "1000m"
+      limits:
+        memory: "4Gi"
+        cpu: "2000m"
+  ingress:
+    enabled: true
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    hosts:
+      - grafana.kaldrix.com
+    tls:
+      - secretName: "grafana-tls"
+        hosts:
+          - "grafana.kaldrix.com"
+
+# Monitoring and alerting for production
+monitoring:
+  enabled: true
+  serviceAccount:
+    create: true
+    name: "kaldrix-monitoring"
+  rbac:
+    create: true
+  alerts:
+    enabled: true
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 80% for 5 minutes on instance {{ $labels.instance }}"
+      - alert: CriticalCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical CPU usage detected"
+          description: "CPU usage is above 90% for 2 minutes on instance {{ $labels.instance }}"
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 85% for 5 minutes on instance {{ $labels.instance }}"
+      - alert: CriticalMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical memory usage detected"
+          description: "Memory usage is above 95% for 2 minutes on instance {{ $labels.instance }}"
+
+# Security configuration for production
+security:
+  podSecurityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
+    runAsNonRoot: true
+  containerSecurityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    capabilities:
+      drop:
+        - ALL
+    seccompProfile:
+      type: RuntimeDefault
+  networkPolicy:
+    enabled: true
+    egressRules:
+      - to: []
+        ports: []
+    ingressRules:
+      - from: []
+        ports: []
+
+# Secrets management for production
+secrets:
+  enabled: true
+  externalSecrets:
+    enabled: true
+    vault:
+      enabled: true
+      address: "https://vault.kaldrix.com"
+      role: "kaldrix-production"
+      path: "secret/data/kaldrix/production"
+
+# Health checks for production
+healthChecks:
+  enabled: true
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# Zero-downtime deployment for production
+zeroDowntime:
+  enabled: true
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  terminationGracePeriodSeconds: 60
+
+# Backup and recovery for production
+backup:
+  enabled: true
+  schedule: "0 2 * * *"
+  retention: "30d"
+  storage:
+    className: "premium-ssd"
+    size: "200Gi"
+  databases:
+    - name: "postgres"
+      host: "postgres-service"
+      port: 5432
+      database: "kaldrix_prod"
+      username: "kaldrix"
+    - name: "redis"
+      host: "redis-service"
+      port: 6379
+
+# Logging configuration for production
+logging:
+  enabled: true
+  level: "info"
+  format: "json"
+  fluentd:
+    enabled: true
+    image: "fluent/fluentd:v1.16-1"
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+  loki:
+    enabled: true
+    address: "http://loki:3100"
+    username: ""
+    password: ""

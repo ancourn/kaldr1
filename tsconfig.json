@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "noImplicitAny": false,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+<<<<<<< HEAD
+  "exclude": ["node_modules"]
+=======
+<<<<<<< HEAD
+  "exclude": ["kaldr1", "node_modules", ".next"]
+=======
+  "exclude": ["node_modules"]
+>>>>>>> 825fb317ac2b476898191ee36891ce92b0ff27ca
+>>>>>>> 28f03b7b7ee59195afe2e07f647ca52fd48e24fb
+}
