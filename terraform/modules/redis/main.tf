@@ -1,432 +1,268 @@
-# Redis Module - Redis cluster for KALDRIX
-
-resource "aws_elasticache_subnet_group" "this" {
-  name        = "${var.project_name}-${var.environment}-redis-subnet-group"
-  description = "Redis subnet group for KALDRIX"
-  subnet_ids  = var.private_subnets
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-redis-subnet-group"
-    },
-    var.tags
-  )
-}
-
-resource "aws_elasticache_parameter_group" "this" {
-  name        = "${var.project_name}-${var.environment}-redis-parameter-group"
-  family      = "redis7"
-  description = "Redis parameter group for KALDRIX"
-
-  parameter {
-    name  = "cluster-enabled"
-    value = "yes"
-  }
-
-  parameter {
-    name  = "cluster-node-timeout"
-    value = "300"
-  }
-
-  parameter {
-    name  = "cluster-announce-ip"
-    value = "10.0.0.1"
-  }
-
-  parameter {
-    name  = "cluster-announce-port"
-    value = "6379"
-  }
-
-  parameter {
-    name  = "cluster-announce-bus-port"
-    value = "16379"
-  }
-
-  parameter {
-    name  = "cluster-config-file"
-    value = "nodes-6379.conf"
-  }
-
-  parameter {
-    name  = "cluster-node-timeout"
-    value = "300"
-  }
-
-  parameter {
-    name  = "cluster-migration-barrier"
-    value = "1"
-  }
-
-  parameter {
-    name  = "cluster-require-full-coverage"
-    value = "yes"
-  }
-
-  parameter {
-    name  = "cluster-slave-no-failover"
-    value = "no"
-  }
-
-  parameter {
-    name  = "cluster-slave-validity-factor"
-    value = "10"
-  }
-
-  parameter {
-    name  = "cluster-slave-lazy-flush"
-    value = "no"
-  }
-
-  parameter {
-    name  = "cluster-diskless-sync"
-    value = "no"
-  }
-
-  parameter {
-    name  = "cluster-ping-interval"
-    value = "150"
-  }
-
-  parameter {
-    name  = "cluster-ping-timeout"
-    value = "150"
-  }
-
-  parameter {
-    name  = "cluster-link-send-buffer-limit"
-    value = "0"
-  }
-
-  parameter {
-    name  = "cluster-link-receive-buffer-limit"
-    value = "0"
-  }
-
-  parameter {
-    name  = "cluster-link-retransmit-interval"
-    value = "1"
-  }
-
-  parameter {
-    name  = "cluster-link-timeout"
-    value = "15"
-  }
-
-  parameter {
-    name  = "cluster-slave-lazy-flush"
-    value = "no"
-  }
-
-  parameter {
-    name  = "cluster-diskless-sync"
-    value = "no"
-  }
-
-  parameter {
-    name  = "maxmemory-policy"
-    value = "allkeys-lru"
-  }
-
-  parameter {
-    name  = "maxmemory-samples"
-    value = "5"
-  }
-
-  parameter {
-    name  = "timeout"
-    value = "300"
-  }
-
-  parameter {
-    name  = "tcp-keepalive"
-    value = "300"
-  }
-
-  parameter {
-    name  = "tcp-backlog"
-    value = "511"
-  }
-
-  parameter {
-    name  = "save"
-    value = ""
-  }
-
-  parameter {
-    name  = "appendonly"
-    value = "yes"
-  }
-
-  parameter {
-    name  = "appendfsync"
-    value = "everysec"
-  }
-
-  parameter {
-    name  = "no-appendfsync-on-rewrite"
-    value = "no"
-  }
-
-  parameter {
-    name  = "auto-aof-rewrite-percentage"
-    value = "100"
-  }
-
-  parameter {
-    name  = "auto-aof-rewrite-min-size"
-    value = "64mb"
-  }
-
-  parameter {
-    name  = "aof-load-truncated"
-    value = "yes"
-  }
-
-  parameter {
-    name  = "lua-time-limit"
-    value = "5000"
-  }
-
-  parameter {
-    name  = "slowlog-log-slower-than"
-    value = "10000"
-  }
-
-  parameter {
-    name  = "slowlog-max-len"
-    value = "128"
-  }
-
-  parameter {
-    name  = "notify-keyspace-events"
-    value = "Ex"
-  }
-
-  parameter {
-    name  "hash-max-ziplist-entries"
-    value = "512"
-  }
-
-  parameter {
-    name  = "hash-max-ziplist-value"
-    value = "64"
-  }
-
-  parameter {
-    name  = "list-max-ziplist-size"
-    value = "-2"
-  }
-
-  parameter {
-    name  = "list-compress-depth"
-    value = "0"
-  }
-
-  parameter {
-    name  = "set-max-intset-entries"
-    value = "512"
-  }
-
-  parameter {
-    name  = "zset-max-ziplist-entries"
-    value = "128"
-  }
-
-  parameter {
-    name  = "zset-max-ziplist-value"
-    value = "64"
-  }
-
-  parameter {
-    name  = "hll-sparse-max-bytes"
-    value = "3000"
-  }
-
-  parameter {
-    name  = "activerehashing"
-    value = "yes"
-  }
-
-  parameter {
-    name  = "client-output-buffer-limit"
-    value = "normal 0 0 0 slave 268435456 67108864 604800000 pubsub 33554432 8388608 604800000"
-  }
-
-  parameter {
-    name  = "hz"
-    value = "10"
-  }
-
-  parameter {
-    name  = "aof-rewrite-incremental-fsync"
-    value = "yes"
-  }
-
-  parameter {
-    name  = "rdb-save-incremental-fsync"
-    value = "no"
-  }
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-redis-parameter-group"
-    },
-    var.tags
-  )
-}
-
-resource "aws_elasticache_replication_group" "this" {
-  description          = "Redis cluster for KALDRIX"
-  replication_group_id = "${var.project_name}-${var.environment}-redis"
-  node_type            = var.environment == "production" ? "cache.m6g.2xlarge" : "cache.m6g.xlarge"
-  port                = 6379
-  parameter_group_name = aws_elasticache_parameter_group.this.name
-  subnet_group_name   = aws_elasticache_subnet_group.this.name
-  security_group_ids  = [var.security_group_id]
-  automatic_failover_enabled = true
-  multi_az_enabled   = var.environment == "production"
-  at_rest_encryption_enabled = true
-  transit_encryption_enabled = true
-  auth_token          = var.redis_password
-  engine             = "redis"
-  engine_version     = "7.1"
-  num_cache_clusters = var.environment == "production" ? 3 : 2
-  snapshot_window    = "00:00-01:00"
-  snapshot_retention_limit = var.environment == "production" ? 7 : 1
-  maintenance_window = "sun:06:00-sun:07:00"
-  notification_topic_arn = var.notification_topic_arn
-  apply_immediately = false
-
-  cluster_mode {
-    replicas_per_node_group = var.environment == "production" ? 2 : 1
-    num_node_groups         = var.environment == "production" ? 2 : 1
-  }
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-redis"
-    },
-    var.tags
-  )
-}
-
-resource "aws_elasticache_user" "this" {
-  user_id       = "${var.project_name}-${var.environment}-redis-user"
-  user_name    = "${var.project_name}-${var.environment}-redis-user"
-  access_string = "on ~* +@all -@dangerous"
-  engine        = "REDIS"
-  passwords     = [var.redis_password]
-  no_password_required = false
-
-  authentication_mode {
-    type = "password"
-  }
-}
-
-resource "aws_elasticache_user_group" "this" {
-  user_group_id  = "${var.project_name}-${var.environment}-redis-user-group"
-  engine         = "REDIS"
-  user_ids       = [aws_elasticache_user.this.user_id]
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-redis-user-group"
-    },
-    var.tags
-  )
-}
-
-resource "aws_elasticache_user_group_association" "this" {
-  user_group_id = aws_elasticache_user_group.this.user_group_id
-  user_id       = aws_elasticache_user.this.user_id
-}
-
-resource "aws_secretsmanager_secret" "redis" {
-  name                    = "${var.project_name}/${var.environment}/redis"
-  description             = "Redis credentials for KALDRIX"
-  recovery_window_in_days = 0
-  kms_key_id              = var.kms_key_arn
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-redis-secret"
-    },
-    var.tags
-  )
-}
-
-resource "aws_secretsmanager_secret_version" "redis" {
-  secret_id = aws_secretsmanager_secret.redis.id
-  secret_string = jsonencode({
-    host     = aws_elasticache_replication_group.this.primary_endpoint_address
-    port     = aws_elasticache_replication_group.this.port
-    password = var.redis_password
-    engine   = "redis"
-    replication_group_id = aws_elasticache_replication_group.this.id
-    user_id  = aws_elasticache_user.this.user_id
-  })
-}
-
-resource "aws_ssm_parameter" "redis_endpoint" {
-  name  = "/${var.project_name}/${var.environment}/redis/endpoint"
-  type  = "String"
-  value = aws_elasticache_replication_group.this.primary_endpoint_address
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-redis-endpoint-param"
-    },
-    var.tags
-  )
-}
-
-resource "aws_ssm_parameter" "redis_port" {
-  name  = "/${var.project_name}/${var.environment}/redis/port"
-  type  = "String"
-  value = aws_elasticache_replication_group.this.port
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-redis-port-param"
-    },
-    var.tags
-  )
-}
-
-resource "aws_ssm_parameter" "redis_reader_endpoint" {
-  name  = "/${var.project_name}/${var.environment}/redis/reader-endpoint"
-  type  = "String"
-  value = aws_elasticache_replication_group.this.reader_endpoint_address
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-redis-reader-endpoint-param"
-    },
-    var.tags
-  )
-}
-
-resource "random_password" "redis" {
-  length           = 32
-  special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
-}
-
-variable "redis_password" {
-  description = "Redis password"
+variable "environment" {
+  description = "Environment name"
   type        = string
+}
+
+variable "cluster_id" {
+  description = "ElastiCache cluster ID"
+  type        = string
+}
+
+variable "node_type" {
+  description = "ElastiCache node type"
+  type        = string
+  default     = "cache.t3.medium"
+}
+
+variable "num_cache_nodes" {
+  description = "Number of cache nodes"
+  type        = number
+  default     = 2
+}
+
+variable "engine" {
+  description = "Cache engine"
+  type        = string
+  default     = "redis"
+}
+
+variable "engine_version" {
+  description = "Cache engine version"
+  type        = string
+  default     = "7.0"
+}
+
+variable "port" {
+  description = "Cache port"
+  type        = number
+  default     = 6379
+}
+
+variable "parameter_group_name" {
+  description = "Parameter group name"
+  type        = string
+  default     = "default.redis7"
+}
+
+variable "subnet_group_name" {
+  description = "Subnet group name"
+  type        = string
+}
+
+variable "vpc_id" {
+  description = "VPC ID"
+  type        = string
+}
+
+variable "private_subnets" {
+  description = "List of private subnet IDs"
+  type        = list(string)
+}
+
+variable "security_group_ids" {
+  description = "List of security group IDs"
+  type        = list(string)
+  default     = []
+}
+
+variable "at_rest_encryption_enabled" {
+  description = "Enable encryption at rest"
+  type        = bool
+  default     = true
+}
+
+variable "transit_encryption_enabled" {
+  description = "Enable encryption in transit"
+  type        = bool
+  default     = true
+}
+
+variable "auth_token" {
+  description = "Auth token for Redis"
+  type        = string
+  default     = null
   sensitive   = true
-  default     = random_password.redis.result
 }
 
-variable "kms_key_arn" {
-  description = "KMS key ARN for encryption"
+variable "automatic_failover_enabled" {
+  description = "Enable automatic failover"
+  type        = bool
+  default     = true
+}
+
+variable "multi_az_enabled" {
+  description = "Enable multi-AZ"
+  type        = bool
+  default     = true
+}
+
+variable "snapshot_retention_limit" {
+  description = "Number of days to retain snapshots"
+  type        = number
+  default     = 7
+}
+
+variable "snapshot_window" {
+  description = "Daily time range for snapshots"
   type        = string
+  default     = "07:00-08:00"
+}
+
+variable "maintenance_window" {
+  description = "Weekly maintenance window"
+  type        = string
+  default     = "sun:08:00-sun:09:00"
+}
+
+variable "apply_immediately" {
+  description = "Apply changes immediately"
+  type        = bool
+  default     = false
 }
 
 variable "notification_topic_arn" {
   description = "SNS topic ARN for notifications"
   type        = string
   default     = null
+}
+
+variable "tags" {
+  description = "A map of tags to assign to the resources"
+  type        = map(string)
+  default     = {}
+}
+
+resource "aws_elasticache_subnet_group" "this" {
+  name        = var.subnet_group_name
+  description = "ElastiCache subnet group for ${var.environment}"
+  subnet_ids  = var.private_subnets
+
+  tags = merge(var.tags, {
+    Name        = var.subnet_group_name
+    Environment = var.environment
+  })
+}
+
+resource "aws_security_group" "this" {
+  count       = length(var.security_group_ids) > 0 ? 0 : 1
+  name        = "${var.environment}-redis-sg"
+  description = "Security group for Redis cluster"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    from_port = var.port
+    to_port   = var.port
+    protocol  = "tcp"
+    self      = true
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(var.tags, {
+    Name        = "${var.environment}-redis-sg"
+    Environment = var.environment
+  })
+}
+
+resource "aws_elasticache_replication_group" "this" {
+  replication_group_id          = var.cluster_id
+  replication_group_description = "ElastiCache replication group for ${var.environment}"
+  node_type                     = var.node_type
+  number_cache_clusters         = var.num_cache_nodes
+  engine                        = var.engine
+  engine_version                = var.engine_version
+  port                          = var.port
+  parameter_group_name          = var.parameter_group_name
+  subnet_group_name             = aws_elasticache_subnet_group.this.name
+  security_group_ids            = length(var.security_group_ids) > 0 ? var.security_group_ids : [aws_security_group.this[0].id]
+  at_rest_encryption_enabled    = var.at_rest_encryption_enabled
+  transit_encryption_enabled    = var.transit_encryption_enabled
+  auth_token                    = var.auth_token
+  automatic_failover_enabled    = var.automatic_failover_enabled
+  multi_az_enabled              = var.multi_az_enabled
+  snapshot_retention_limit      = var.snapshot_retention_limit
+  snapshot_window               = var.snapshot_window
+  maintenance_window            = var.maintenance_window
+  apply_immediately             = var.apply_immediately
+  notification_topic_arn        = var.notification_topic_arn
+
+  tags = merge(var.tags, {
+    Name        = var.cluster_id
+    Environment = var.environment
+  })
+
+  lifecycle {
+    ignore_changes = [auth_token]
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "cpu_utilization" {
+  alarm_name          = "${var.environment}-redis-cpu-utilization"
+  alarm_description   = "Redis CPU utilization"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ElastiCache"
+  period              = "300"
+  statistic           = "Average"
+  threshold           = "80"
+  alarm_actions       = []
+
+  dimensions = {
+    ReplicationGroupId = aws_elasticache_replication_group.this.id
+  }
+
+  tags = merge(var.tags, {
+    Name        = "${var.environment}-redis-cpu-utilization"
+    Environment = var.environment
+  })
+}
+
+resource "aws_cloudwatch_metric_alarm" "memory_usage" {
+  alarm_name          = "${var.environment}-redis-memory-usage"
+  alarm_description   = "Redis memory usage"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "DatabaseMemoryUsagePercentage"
+  namespace           = "AWS/ElastiCache"
+  period              = "300"
+  statistic           = "Average"
+  threshold           = "80"
+  alarm_actions       = []
+
+  dimensions = {
+    ReplicationGroupId = aws_elasticache_replication_group.this.id
+  }
+
+  tags = merge(var.tags, {
+    Name        = "${var.environment}-redis-memory-usage"
+    Environment = var.environment
+  })
+}
+
+resource "aws_cloudwatch_metric_alarm" "curr_connections" {
+  alarm_name          = "${var.environment}-redis-curr-connections"
+  alarm_description   = "Redis current connections"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "CurrConnections"
+  namespace           = "AWS/ElastiCache"
+  period              = "300"
+  statistic           = "Average"
+  threshold           = "1000"
+  alarm_actions       = []
+
+  dimensions = {
+    ReplicationGroupId = aws_elasticache_replication_group.this.id
+  }
+
+  tags = merge(var.tags, {
+    Name        = "${var.environment}-redis-curr-connections"
+    Environment = var.environment
+  })
 }
