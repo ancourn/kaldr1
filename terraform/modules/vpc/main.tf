@@ -1,124 +1,136 @@
-# VPC Module - Network foundation for KALDRIX infrastructure
+variable "region" {
+  description = "AWS region"
+  type        = string
+}
+
+variable "environment" {
+  description = "Environment name"
+  type        = string
+}
+
+variable "vpc_cidr" {
+  description = "CIDR block for VPC"
+  type        = string
+  default     = "10.0.0.0/16"
+}
+
+variable "availability_zones" {
+  description = "List of availability zones"
+  type        = list(string)
+}
+
+variable "public_subnets" {
+  description = "List of public subnet CIDRs"
+  type        = list(string)
+}
+
+variable "private_subnets" {
+  description = "List of private subnet CIDRs"
+  type        = list(string)
+}
+
+variable "database_subnets" {
+  description = "List of database subnet CIDRs"
+  type        = list(string)
+}
+
+variable "enable_vpn_gateway" {
+  description = "Enable VPN gateway"
+  type        = bool
+  default     = false
+}
+
+variable "tags" {
+  description = "A map of tags to assign to the resources"
+  type        = map(string)
+  default     = {}
+}
 
 resource "aws_vpc" "this" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
-  instance_tenancy     = "default"
 
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-vpc"
-    },
-    var.tags
-  )
+  tags = merge(var.tags, {
+    Name        = "${var.environment}-vpc"
+    Environment = var.environment
+  })
 }
 
 resource "aws_internet_gateway" "this" {
   vpc_id = aws_vpc.this.id
 
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-igw"
-    },
-    var.tags
-  )
+  tags = merge(var.tags, {
+    Name        = "${var.environment}-igw"
+    Environment = var.environment
+  })
 }
 
 resource "aws_eip" "nat" {
-  count = length(var.availability_zones)
+  count = length(var.public_subnets)
   vpc   = true
 
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-eip-${count.index}"
-    },
-    var.tags
-  )
-}
-
-resource "aws_nat_gateway" "this" {
-  count         = length(var.availability_zones)
-  allocation_id = aws_eip.nat[count.index].id
-  subnet_id     = aws_subnet.public[count.index].id
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-nat-${count.index}"
-    },
-    var.tags
-  )
+  tags = merge(var.tags, {
+    Name        = "${var.environment}-eip-${count.index + 1}"
+    Environment = var.environment
+  })
 
   depends_on = [aws_internet_gateway.this]
 }
 
-resource "aws_subnet" "private" {
-  count = length(var.private_subnets)
+resource "aws_nat_gateway" "this" {
+  count         = length(var.public_subnets)
+  allocation_id = aws_eip.nat[count.index].id
+  subnet_id     = aws_subnet.public[count.index].id
 
+  tags = merge(var.tags, {
+    Name        = "${var.environment}-nat-${count.index + 1}"
+    Environment = var.environment
+  })
+
+  depends_on = [aws_internet_gateway.this]
+}
+
+resource "aws_subnet" "public" {
+  count                   = length(var.public_subnets)
+  vpc_id                  = aws_vpc.this.id
+  cidr_block              = var.public_subnets[count.index]
+  availability_zone       = var.availability_zones[count.index]
+  map_public_ip_on_launch = true
+
+  tags = merge(var.tags, {
+    Name                                      = "${var.environment}-public-subnet-${count.index + 1}"
+    Environment                               = var.environment
+    "kubernetes.io/cluster/${var.environment}" = "shared"
+    "kubernetes.io/role/elb"                   = "1"
+  })
+}
+
+resource "aws_subnet" "private" {
+  count             = length(var.private_subnets)
   vpc_id            = aws_vpc.this.id
   cidr_block        = var.private_subnets[count.index]
   availability_zone = var.availability_zones[count.index]
 
-  tags = merge(
-    {
-      Name                                      = "${var.project_name}-${var.environment}-private-${count.index}"
-      "kubernetes.io/cluster/${var.project_name}" = "shared"
-      "kubernetes.io/role/internal-elb"         = "1"
-    },
-    var.tags
-  )
-}
-
-resource "aws_subnet" "public" {
-  count = length(var.public_subnets)
-
-  vpc_id            = aws_vpc.this.id
-  cidr_block        = var.public_subnets[count.index]
-  availability_zone = var.availability_zones[count.index]
-
-  map_public_ip_on_launch = true
-
-  tags = merge(
-    {
-      Name                                      = "${var.project_name}-${var.environment}-public-${count.index}"
-      "kubernetes.io/cluster/${var.project_name}" = "shared"
-      "kubernetes.io/role/elb"                  = "1"
-    },
-    var.tags
-  )
+  tags = merge(var.tags, {
+    Name                                      = "${var.environment}-private-subnet-${count.index + 1}"
+    Environment                               = var.environment
+    "kubernetes.io/cluster/${var.environment}" = "shared"
+    "kubernetes.io/role/internal-elb"          = "1"
+  })
 }
 
 resource "aws_subnet" "database" {
-  count = length(var.database_subnets)
-
+  count             = length(var.database_subnets)
   vpc_id            = aws_vpc.this.id
   cidr_block        = var.database_subnets[count.index]
   availability_zone = var.availability_zones[count.index]
 
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-database-${count.index}"
-    },
-    var.tags
-  )
-}
-
-resource "aws_route_table" "private" {
-  count = length(var.availability_zones)
-
-  vpc_id = aws_vpc.this.id
-
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.this[count.index].id
-  }
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-private-rt-${count.index}"
-    },
-    var.tags
-  )
+  tags = merge(var.tags, {
+    Name                                      = "${var.environment}-database-subnet-${count.index + 1}"
+    Environment                               = var.environment
+    "kubernetes.io/cluster/${var.environment}" = "shared"
+  })
 }
 
 resource "aws_route_table" "public" {
@@ -129,17 +141,14 @@ resource "aws_route_table" "public" {
     gateway_id = aws_internet_gateway.this.id
   }
 
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-public-rt"
-    },
-    var.tags
-  )
+  tags = merge(var.tags, {
+    Name        = "${var.environment}-public-rt"
+    Environment = var.environment
+  })
 }
 
-resource "aws_route_table" "database" {
-  count = length(var.availability_zones)
-
+resource "aws_route_table" "private" {
+  count  = length(var.private_subnets)
   vpc_id = aws_vpc.this.id
 
   route {
@@ -147,207 +156,55 @@ resource "aws_route_table" "database" {
     nat_gateway_id = aws_nat_gateway.this[count.index].id
   }
 
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-database-rt-${count.index}"
-    },
-    var.tags
-  )
+  tags = merge(var.tags, {
+    Name        = "${var.environment}-private-rt-${count.index + 1}"
+    Environment = var.environment
+  })
 }
 
-resource "aws_route_table_association" "private" {
-  count = length(var.private_subnets)
+resource "aws_route_table" "database" {
+  count  = length(var.database_subnets)
+  vpc_id = aws_vpc.this.id
 
-  subnet_id      = aws_subnet.private[count.index].id
-  route_table_id = aws_route_table.private[count.index].id
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.this[count.index].id
+  }
+
+  tags = merge(var.tags, {
+    Name        = "${var.environment}-database-rt-${count.index + 1}"
+    Environment = var.environment
+  })
 }
 
 resource "aws_route_table_association" "public" {
-  count = length(var.public_subnets)
-
+  count          = length(var.public_subnets)
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_route_table_association" "database" {
-  count = length(var.database_subnets)
+resource "aws_route_table_association" "private" {
+  count          = length(var.private_subnets)
+  subnet_id      = aws_subnet.private[count.index].id
+  route_table_id = aws_route_table.private[count.index].id
+}
 
+resource "aws_route_table_association" "database" {
+  count          = length(var.database_subnets)
   subnet_id      = aws_subnet.database[count.index].id
   route_table_id = aws_route_table.database[count.index].id
 }
 
-resource "aws_vpc_endpoint" "s3" {
-  vpc_id            = aws_vpc.this.id
-  service_name      = "com.amazonaws.${var.aws_region}.s3"
-  vpc_endpoint_type = "Gateway"
-
-  route_table_ids = concat(
-    aws_route_table.private[*].id,
-    aws_route_table.database[*].id
-  )
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-s3-endpoint"
-    },
-    var.tags
-  )
-}
-
-resource "aws_vpc_endpoint" "dynamodb" {
-  vpc_id            = aws_vpc.this.id
-  service_name      = "com.amazonaws.${var.aws_region}.dynamodb"
-  vpc_endpoint_type = "Gateway"
-
-  route_table_ids = concat(
-    aws_route_table.private[*].id,
-    aws_route_table.database[*].id
-  )
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-dynamodb-endpoint"
-    },
-    var.tags
-  )
-}
-
-resource "aws_vpc_endpoint" "ecr_api" {
-  vpc_id            = aws_vpc.this.id
-  service_name      = "com.amazonaws.${var.aws_region}.ecr.api"
-  vpc_endpoint_type = "Interface"
-  subnet_ids        = aws_subnet.private[*].id
-
-  security_group_ids = [aws_security_group.vpc_endpoint.id]
-
-  private_dns_enabled = true
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-ecr-api-endpoint"
-    },
-    var.tags
-  )
-}
-
-resource "aws_vpc_endpoint" "ecr_dkr" {
-  vpc_id            = aws_vpc.this.id
-  service_name      = "com.amazonaws.${var.aws_region}.ecr.dkr"
-  vpc_endpoint_type = "Interface"
-  subnet_ids        = aws_subnet.private[*].id
-
-  security_group_ids = [aws_security_group.vpc_endpoint.id]
-
-  private_dns_enabled = true
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-ecr-dkr-endpoint"
-    },
-    var.tags
-  )
-}
-
-resource "aws_vpc_endpoint" "logs" {
-  vpc_id            = aws_vpc.this.id
-  service_name      = "com.amazonaws.${var.aws_region}.logs"
-  vpc_endpoint_type = "Interface"
-  subnet_ids        = aws_subnet.private[*].id
-
-  security_group_ids = [aws_security_group.vpc_endpoint.id]
-
-  private_dns_enabled = true
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-logs-endpoint"
-    },
-    var.tags
-  )
-}
-
-resource "aws_vpc_endpoint" "monitoring" {
-  vpc_id            = aws_vpc.this.id
-  service_name      = "com.amazonaws.${var.aws_region}.monitoring"
-  vpc_endpoint_type = "Interface"
-  subnet_ids        = aws_subnet.private[*].id
-
-  security_group_ids = [aws_security_group.vpc_endpoint.id]
-
-  private_dns_enabled = true
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-monitoring-endpoint"
-    },
-    var.tags
-  )
-}
-
-resource "aws_vpc_endpoint" "secretsmanager" {
-  vpc_id            = aws_vpc.this.id
-  service_name      = "com.amazonaws.${var.aws_region}.secretsmanager"
-  vpc_endpoint_type = "Interface"
-  subnet_ids        = aws_subnet.private[*].id
-
-  security_group_ids = [aws_security_group.vpc_endpoint.id]
-
-  private_dns_enabled = true
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-secretsmanager-endpoint"
-    },
-    var.tags
-  )
-}
-
-resource "aws_vpc_endpoint" "ssm" {
-  vpc_id            = aws_vpc.this.id
-  service_name      = "com.amazonaws.${var.aws_region}.ssm"
-  vpc_endpoint_type = "Interface"
-  subnet_ids        = aws_subnet.private[*].id
-
-  security_group_ids = [aws_security_group.vpc_endpoint.id]
-
-  private_dns_enabled = true
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-ssm-endpoint"
-    },
-    var.tags
-  )
-}
-
-resource "aws_vpc_endpoint" "kms" {
-  vpc_id            = aws_vpc.this.id
-  service_name      = "com.amazonaws.${var.aws_region}.kms"
-  vpc_endpoint_type = "Interface"
-  subnet_ids        = aws_subnet.private[*].id
-
-  security_group_ids = [aws_security_group.vpc_endpoint.id]
-
-  private_dns_enabled = true
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-kms-endpoint"
-    },
-    var.tags
-  )
-}
-
-resource "aws_security_group" "vpc_endpoint" {
-  name        = "${var.project_name}-${var.environment}-vpc-endpoint-sg"
-  description = "Security group for VPC endpoints"
+resource "aws_security_group" "this" {
+  name        = "${var.environment}-default-sg"
+  description = "Default security group for ${var.environment}"
   vpc_id      = aws_vpc.this.id
 
   ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = [aws_vpc.this.cidr_block]
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+    self      = true
   }
 
   egress {
@@ -357,109 +214,73 @@ resource "aws_security_group" "vpc_endpoint" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-vpc-endpoint-sg"
-    },
-    var.tags
-  )
+  tags = merge(var.tags, {
+    Name        = "${var.environment}-default-sg"
+    Environment = var.environment
+  })
 }
 
-resource "aws_network_acl" "private" {
-  vpc_id     = aws_vpc.this.id
-  subnet_ids = aws_subnet.private[*].id
-
-  ingress {
-    rule_no    = 100
-    action     = "allow"
-    from_port  = 0
-    to_port    = 0
-    protocol   = "-1"
-    cidr_block = aws_vpc.this.cidr_block
-  }
-
-  ingress {
-    rule_no    = 110
-    action     = "allow"
-    from_port  = 0
-    to_port    = 0
-    protocol   = "-1"
-    cidr_block = "0.0.0.0/0"
-  }
-
-  egress {
-    rule_no    = 100
-    action     = "allow"
-    from_port  = 0
-    to_port    = 0
-    protocol   = "-1"
-    cidr_block = "0.0.0.0/0"
-  }
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-private-nacl"
-    },
-    var.tags
-  )
+resource "aws_flow_log" "this" {
+  iam_role_arn    = aws_iam_role.flow_log.arn
+  log_destination = aws_cloudwatch_log_group.flow_log.arn
+  traffic_type    = "ALL"
+  vpc_id          = aws_vpc.this.id
 }
 
-resource "aws_network_acl" "public" {
-  vpc_id     = aws_vpc.this.id
-  subnet_ids = aws_subnet.public[*].id
+resource "aws_cloudwatch_log_group" "flow_log" {
+  name              = "/aws/vpc/flow-log/${var.environment}"
+  retention_in_days = 7
 
-  ingress {
-    rule_no    = 100
-    action     = "allow"
-    from_port  = 0
-    to_port    = 0
-    protocol   = "-1"
-    cidr_block = "0.0.0.0/0"
-  }
-
-  egress {
-    rule_no    = 100
-    action     = "allow"
-    from_port  = 0
-    to_port    = 0
-    protocol   = "-1"
-    cidr_block = "0.0.0.0/0"
-  }
-
-  tags = merge(
-    {
-      Name = "${var.project_name}-${var.environment}-public-nacl"
-    },
-    var.tags
-  )
+  tags = merge(var.tags, {
+    Name        = "${var.environment}-flow-log"
+    Environment = var.environment
+  })
 }
 
-resource "aws_network_acl" "database" {
-  vpc_id     = aws_vpc.this.id
-  subnet_ids = aws_subnet.database[*].id
+resource "aws_iam_role" "flow_log" {
+  name = "${var.environment}-vpc-flow-log-role"
 
-  ingress {
-    rule_no    = 100
-    action     = "allow"
-    from_port  = 0
-    to_port    = 0
-    protocol   = "-1"
-    cidr_block = aws_vpc.this.cidr_block
-  }
-
-  egress {
-    rule_no    = 100
-    action     = "allow"
-    from_port  = 0
-    to_port    = 0
-    protocol   = "-1"
-    cidr_block = "0.0.0.0/0"
-  }
-
-  tags = merge(
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
     {
-      Name = "${var.project_name}-${var.environment}-database-nacl"
-    },
-    var.tags
-  )
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "vpc-flow-logs.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+
+  tags = merge(var.tags, {
+    Name        = "${var.environment}-vpc-flow-log-role"
+    Environment = var.environment
+  })
+}
+
+resource "aws_iam_role_policy" "flow_log" {
+  name = "${var.environment}-vpc-flow-log-policy"
+  role = aws_iam_role.flow_log.id
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ]
+}
+EOF
 }
