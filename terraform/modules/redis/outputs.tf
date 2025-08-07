@@ -1,94 +1,79 @@
-output "redis_cluster_id" {
-  description = "Redis cluster ID"
+output "replication_group_id" {
+  description = "The ID of the ElastiCache replication group"
   value       = aws_elasticache_replication_group.this.id
 }
 
-output "redis_cluster_arn" {
-  description = "Redis cluster ARN"
+output "replication_group_arn" {
+  description = "The ARN of the ElastiCache replication group"
   value       = aws_elasticache_replication_group.this.arn
 }
 
-output "redis_cluster_endpoint" {
-  description = "Redis cluster primary endpoint"
+output "primary_endpoint_address" {
+  description = "The primary endpoint address of the replication group"
   value       = aws_elasticache_replication_group.this.primary_endpoint_address
 }
 
-output "redis_cluster_port" {
-  description = "Redis cluster port"
-  value       = aws_elasticache_replication_group.this.port
-}
-
-output "redis_reader_endpoint" {
-  description = "Redis cluster reader endpoint"
+output "reader_endpoint_address" {
+  description = "The reader endpoint address of the replication group"
   value       = aws_elasticache_replication_group.this.reader_endpoint_address
 }
 
-output "redis_configuration_endpoint" {
-  description = "Redis cluster configuration endpoint"
+output "configuration_endpoint_address" {
+  description = "The configuration endpoint address of the replication group"
   value       = aws_elasticache_replication_group.this.configuration_endpoint_address
 }
 
-output "redis_password" {
-  description = "Redis password"
-  value       = var.redis_password
-  sensitive   = true
+output "port" {
+  description = "The port number of the replication group"
+  value       = aws_elasticache_replication_group.this.port
 }
 
-output "redis_user_id" {
-  description = "Redis user ID"
-  value       = aws_elasticache_user.this.user_id
+output "node_type" {
+  description = "The node type of the replication group"
+  value       = aws_elasticache_replication_group.this.node_type
 }
 
-output "redis_user_name" {
-  description = "Redis user name"
-  value       = aws_elasticache_user.this.user_name
+output "engine" {
+  description = "The engine of the replication group"
+  value       = aws_elasticache_replication_group.this.engine
 }
 
-output "redis_user_group_id" {
-  description = "Redis user group ID"
-  value       = aws_elasticache_user_group.this.user_group_id
+output "engine_version" {
+  description = "The engine version of the replication group"
+  value       = aws_elasticache_replication_group.this.engine_version
 }
 
-output "redis_subnet_group_name" {
-  description = "Redis subnet group name"
+output "number_cache_clusters" {
+  description = "The number of cache clusters in the replication group"
+  value       = aws_elasticache_replication_group.this.number_cache_clusters
+}
+
+output "subnet_group_name" {
+  description = "The name of the subnet group"
   value       = aws_elasticache_subnet_group.this.name
 }
 
-output "redis_parameter_group_name" {
-  description = "Redis parameter group name"
-  value       = aws_elasticache_parameter_group.this.name
+output "security_group_id" {
+  description = "The ID of the security group"
+  value       = length(var.security_group_ids) > 0 ? var.security_group_ids[0] : aws_security_group.this[0].id
 }
 
-output "secrets_manager_secret_arn" {
-  description = "Secrets Manager secret ARN"
-  value       = aws_secretsmanager_secret.redis.arn
+output "at_rest_encryption_enabled" {
+  description = "Whether encryption at rest is enabled"
+  value       = aws_elasticache_replication_group.this.at_rest_encryption_enabled
 }
 
-output "secrets_manager_secret_name" {
-  description = "Secrets Manager secret name"
-  value       = aws_secretsmanager_secret.redis.name
+output "transit_encryption_enabled" {
+  description = "Whether encryption in transit is enabled"
+  value       = aws_elasticache_replication_group.this.transit_encryption_enabled
 }
 
-output "ssm_parameter_arns" {
-  description = "SSM parameter ARNs"
-  value = {
-    endpoint       = aws_ssm_parameter.redis_endpoint.arn
-    port           = aws_ssm_parameter.redis_port.arn
-    reader_endpoint = aws_ssm_parameter.redis_reader_endpoint.arn
-  }
+output "automatic_failover_enabled" {
+  description = "Whether automatic failover is enabled"
+  value       = aws_elasticache_replication_group.this.automatic_failover_enabled
 }
 
-output "cache_nodes" {
-  description = "Redis cache nodes"
-  value       = aws_elasticache_replication_group.this.member_clusters
-}
-
-output "num_cache_clusters" {
-  description = "Number of cache clusters"
-  value       = aws_elasticache_replication_group.this.num_cache_clusters
-}
-
-output "cluster_mode" {
-  description = "Redis cluster mode"
-  value = aws_elasticache_replication_group.this.cluster_mode
+output "multi_az_enabled" {
+  description = "Whether multi-AZ is enabled"
+  value       = aws_elasticache_replication_group.this.multi_az_enabled
 }
