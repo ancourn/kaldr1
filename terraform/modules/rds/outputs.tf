@@ -1,101 +1,74 @@
 output "db_instance_id" {
-  description = "RDS instance ID"
+  description = "The RDS instance ID"
   value       = aws_db_instance.this.id
 }
 
 output "db_instance_arn" {
-  description = "RDS instance ARN"
+  description = "The ARN of the RDS instance"
   value       = aws_db_instance.this.arn
 }
 
-output "db_instance_endpoint" {
-  description = "RDS instance endpoint"
-  value       = aws_db_instance.this.endpoint
-}
-
 output "db_instance_address" {
-  description = "RDS instance address"
+  description = "The address of the RDS instance"
   value       = aws_db_instance.this.address
 }
 
+output "db_instance_endpoint" {
+  description = "The connection endpoint"
+  value       = aws_db_instance.this.endpoint
+}
+
 output "db_instance_port" {
-  description = "RDS instance port"
+  description = "The database port"
   value       = aws_db_instance.this.port
 }
 
 output "db_instance_name" {
-  description = "RDS instance name"
+  description = "The database name"
   value       = aws_db_instance.this.db_name
 }
 
 output "db_instance_username" {
-  description = "RDS instance username"
+  description = "The master username for the database"
   value       = aws_db_instance.this.username
 }
 
-output "db_password" {
-  description = "RDS instance password"
-  value       = var.db_password
-  sensitive   = true
+output "db_instance_status" {
+  description = "The RDS instance status"
+  value       = aws_db_instance.this.status
 }
 
-output "db_subnet_group_name" {
-  description = "RDS subnet group name"
-  value       = aws_db_subnet_group.this.name
+output "db_instance_availability_zone" {
+  description = "The availability zone of the RDS instance"
+  value       = aws_db_instance.this.availability_zone
 }
 
-output "db_parameter_group_name" {
-  description = "RDS parameter group name"
-  value       = aws_db_parameter_group.this.name
+output "db_instance_class" {
+  description = "The RDS instance class"
+  value       = aws_db_instance.this.instance_class
 }
 
-output "db_proxy_id" {
-  description = "RDS proxy ID"
-  value       = var.environment == "production" ? aws_db_proxy.this[0].id : null
+output "db_subnet_group_id" {
+  description = "The db subnet group name"
+  value       = aws_db_subnet_group.this.id
 }
 
-output "db_proxy_endpoint" {
-  description = "RDS proxy endpoint"
-  value       = var.environment == "production" ? aws_db_proxy.this[0].endpoint : null
+output "db_parameter_group_id" {
+  description = "The db parameter group id"
+  value       = aws_db_parameter_group.this.id
 }
 
-output "db_proxy_arn" {
-  description = "RDS proxy ARN"
-  value       = var.environment == "production" ? aws_db_proxy.this[0].arn : null
+output "security_group_id" {
+  description = "The security group id"
+  value       = aws_security_group.rds.id
 }
 
-output "secrets_manager_secret_arn" {
-  description = "Secrets Manager secret ARN"
-  value       = aws_secretsmanager_secret.db.arn
+output "access_security_group_id" {
+  description = "The access security group id"
+  value       = aws_security_group.rds_access.id
 }
 
-output "secrets_manager_secret_name" {
-  description = "Secrets Manager secret name"
-  value       = aws_secretsmanager_secret.db.name
-}
-
-output "ssm_parameter_arns" {
-  description = "SSM parameter ARNs"
-  value = {
-    endpoint = aws_ssm_parameter.db_endpoint.arn
-    port     = aws_ssm_parameter.db_port.arn
-    name     = aws_ssm_parameter.db_name.arn
-  }
-}
-
-output "iam_role_arns" {
-  description = "IAM role ARNs"
-  value = {
-    monitoring = var.environment == "production" ? aws_iam_role.rds_monitoring[0].arn : null
-    s3_import  = aws_iam_role.rds_s3_import.arn
-    proxy      = var.environment == "production" ? aws_iam_role.rds_proxy[0].arn : null
-  }
-}
-
-output "iam_policy_arns" {
-  description = "IAM policy ARNs"
-  value = {
-    s3_import = var.environment == "production" ? aws_iam_policy.rds_s3_import[0].arn : null
-    proxy     = var.environment == "production" ? aws_iam_policy.rds_proxy[0].arn : null
-  }
+output "rds_s3_export_role_arn" {
+  description = "The ARN of the RDS S3 export role"
+  value       = aws_iam_role.rds_s3_export.arn
 }
