@@ -1,15 +1,20 @@
+variable "cluster_name" {
+  description = "Name of the EKS cluster"
+  type        = string
+}
+
 variable "environment" {
   description = "Environment name"
   type        = string
 }
 
-variable "project_name" {
-  description = "Project name"
+variable "region" {
+  description = "AWS region"
   type        = string
 }
 
 variable "vpc_id" {
-  description = "VPC ID"
+  description = "VPC ID where the cluster will be deployed"
   type        = string
 }
 
@@ -23,41 +28,28 @@ variable "public_subnets" {
   type        = list(string)
 }
 
-variable "eks_cluster_version" {
-  description = "EKS cluster version"
+variable "cluster_version" {
+  description = "Kubernetes version"
   type        = string
+  default     = "1.28"
 }
 
-variable "eks_node_groups" {
-  description = "EKS node group configurations"
-  type = map(object({
-    instance_type = string
-    min_size      = number
-    max_size      = number
-    desired_size  = number
-    capacity_type = string
-    disk_size     = number
-  }))
-}
-
-variable "eks_role_arn" {
-  description = "EKS cluster role ARN"
-  type        = string
-}
-
-variable "node_group_role_arns" {
-  description = "Node group role ARNs"
-  type        = map(string)
-}
-
-variable "enable_monitoring" {
-  description = "Enable monitoring"
-  type        = bool
-  default     = true
+variable "node_groups" {
+  description = "Map of node group configurations"
+  type        = map(any)
+  default = {
+    default = {
+      desired_capacity = 3
+      max_capacity     = 5
+      min_capacity     = 1
+      instance_types   = ["t3.medium"]
+      disk_size        = 100
+    }
+  }
 }
 
 variable "tags" {
-  description = "Additional tags to apply to resources"
+  description = "A map of tags to assign to the resources"
   type        = map(string)
   default     = {}
 }
