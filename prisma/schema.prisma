@@ -13,20 +13,415 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// Authentication models for NextAuth.js
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  role          UserRole  @default(DEVELOPER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts     Account[]
+  sessions     Session[]
+  transactions Transaction[]
+  contracts    SmartContract[]
+  audits       SecurityAudit[]
+  permissions  ContractPermission[]
+  alerts       Alert[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Blockchain-specific models
+model Block {
+  id          String   @id @default(cuid())
+  number      Int      @unique
+  hash        String   @unique
+  parentHash  String
+  timestamp   DateTime
+  nonce       String?
+  difficulty  Int?
+  gasLimit    BigInt
+  gasUsed     BigInt
+  size        Int?
+  transactions Transaction[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([number])
+  @@index([timestamp])
+}
+
+model Transaction {
+  id          String           @id @default(cuid())
+  hash        String           @unique
+  blockNumber Int?
+  blockHash   String?
+  from        String
+  to          String?
+  value       Float            // Changed from BigDecimal to Float for SQLite compatibility
+  gasPrice    BigInt
+  gasLimit    BigInt
+  gasUsed     BigInt?
+  input       String?
+  nonce       Int?
+  status      TransactionStatus @default(PENDING)
+  timestamp   DateTime?
+  block       Block?           @relation(fields: [blockNumber], references: [number])
+  userId      String?
+  user        User?            @relation(fields: [userId], references: [id])
+  contractId  String?
+  contract    SmartContract?   @relation(fields: [contractId], references: [id])
+  interactions ContractInteraction[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([from])
+  @@index([to])
+  @@index([status])
+  @@index([timestamp])
+  @@index([contractId])
+}
+
+model SmartContract {
+  id          String              @id @default(cuid())
+  name        String
+  address     String              @unique
+  bytecode    String
+  abi         String              // JSON string
+  version     String
+  status      ContractStatus      @default(ACTIVE)
+  creator     String
+  type        ContractType        @default(OTHER)
+  description String?
+  tags        String?             // JSON array of tags
+  gasUsed     BigInt?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  userId      String?
+  user        User?               @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+  interactions ContractInteraction[]
+  registry     ContractRegistry?
+  audits       SecurityAudit[]
+  versions     ContractVersion[]
+  permissions  ContractPermission[]
+  metrics      MonitoringMetric[]
+  tests        TestResult[]
+  alerts       Alert[]
+
+  @@index([address])
+  @@index([status])
+  @@index([type])
+  @@index([creator])
+}
+
+model ContractInteraction {
+  id          String   @id @default(cuid())
+  contractId  String
+  functionName String
+  parameters  String   // JSON string
+  result      String?  // JSON string
+  gasUsed     BigInt?
+  status      String   @default("pending")
+  timestamp   DateTime @default(now())
+  transactionId String?
+  transaction Transaction? @relation(fields: [transactionId], references: [id])
+
+  contract SmartContract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([contractId])
+  @@index([transactionId])
+}
+
+// Phase 6: Blockchain Integration & Contract Registry Models
+
+model ContractRegistry {
+  id               String   @id @default(cuid())
+  contractId       String   @unique
+  contract         SmartContract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  isPublic         Boolean  @default(true)
+  verified         Boolean  @default(false)
+  verificationDate DateTime?
+  verifiedBy       String?
+  usageCount       Int      @default(0)
+  totalGasUsed     BigInt   @default(0)
+  popularityScore  Float    @default(0)
+  featured         Boolean  @default(false)
+  category         String?  // e.g., "DeFi", "NFT", "Gaming", "Utility"
+  website          String?
+  socialLinks      String?  // JSON object
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([isPublic])
+  @@index([verified])
+  @@index([category])
+  @@index([featured])
+}
+
+model SecurityAudit {
+  id             String             @id @default(cuid())
+  contractId     String
+  contract       SmartContract      @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  auditType      AuditType          @default(STATIC)
+  status         SecurityAuditStatus @default(PENDING)
+  score          Int?               // 0-100 security score
+  vulnerabilities String?           // JSON array of vulnerability objects
+  recommendations String?           // JSON array of recommendations
+  auditorId      String?
+  auditor        User?              @relation(fields: [auditorId], references: [id])
+  auditDate      DateTime           @default(now())
+  report         String?            // Full audit report
+  autoGenerated  Boolean            @default(false)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@index([contractId])
+  @@index([status])
+  @@index([auditType])
+  @@index([score])
+}
+
+model ContractVersion {
+  id           String   @id @default(cuid())
+  contractId   String
+  contract     SmartContract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  version      String
+  bytecode     String
+  abi          String   // JSON string
+  changelog    String?
+  deployedBy   String?
+  deploymentTx String?
+  isLatest     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@unique([contractId, version])
+  @@index([contractId])
+  @@index([isLatest])
+}
+
+model ContractPermission {
+  id          String             @id @default(cuid())
+  contractId  String
+  contract    SmartContract      @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User               @relation(fields: [userId], references: [id])
+  role        ContractRole       @default(VIEWER)
+  permissions String             // JSON array of specific permissions
+  grantedBy   String?
+  grantedAt   DateTime           @default(now())
+  expiresAt   DateTime?
+  isActive    Boolean            @default(true)
+
+  @@unique([contractId, userId])
+  @@index([contractId])
+  @@index([userId])
+  @@index([role])
+}
+
+model MonitoringMetric {
+  id            String   @id @default(cuid())
+  contractId    String
+  contract      SmartContract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  metricType    MetricType
+  value         Float
+  unit          String?
+  timestamp     DateTime @default(now())
+  blockNumber   Int?
+  additionalData String? // JSON object with additional metric data
+
+  @@index([contractId])
+  @@index([metricType])
+  @@index([timestamp])
+}
+
+model TestResult {
+  id            String       @id @default(cuid())
+  contractId    String
+  contract      SmartContract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  testName      String
+  testType      TestType
+  status        TestStatus   @default(PENDING)
+  result        String?      // JSON result object
+  score         Float?       // 0-100 test score
+  gasUsed       BigInt?
+  executionTime Int?         // in milliseconds
+  error         String?
+  testNetwork   String       @default("testnet")
+  createdAt     DateTime     @default(now())
+
+  @@index([contractId])
+  @@index([testType])
+  @@index([status])
+  @@index([testNetwork])
+}
+
+model Alert {
+  id          String      @id @default(cuid())
+  contractId  String?
+  contract    SmartContract? @relation(fields: [contractId], references: [id], onDelete: SetNull)
+  userId      String?
+  user        User?       @relation(fields: [userId], references: [id])
+  type        AlertType
+  severity    AlertSeverity @default(MEDIUM)
+  title       String
+  message     String
+  isRead      Boolean     @default(false)
+  isResolved  Boolean     @default(false)
+  metadata    String?     // JSON object with additional alert data
+  createdAt   DateTime    @default(now())
+  resolvedAt  DateTime?
+
+  @@index([contractId])
+  @@index([userId])
+  @@index([type])
+  @@index([severity])
+  @@index([isRead])
+  @@index([isResolved])
+}
+
+// Enums
+enum UserRole {
+  DEVELOPER
+  ADMIN
+  AUDITOR
+  VIEWER
+}
+
+enum TransactionStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  CANCELLED
+}
+
+enum ContractStatus {
+  ACTIVE
+  INACTIVE
+  DEPLOYING
+  UPGRADING
+  PAUSED
+  FROZEN
+}
+
+// Phase 6 Enums
+enum ContractType {
+  ERC20
+  ERC721
+  ERC1155
+  GOVERNANCE
+  DEFI
+  NFT_MARKETPLACE
+  UTILITY
+  PAYMENT
+  IDENTITY
+  GAMING
+  OTHER
+}
+
+enum AuditType {
+  STATIC
+  DYNAMIC
+  MANUAL
+  AUTOMATED
+  COMPREHENSIVE
+}
+
+enum SecurityAuditStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum ContractRole {
+  OWNER
+  DEVELOPER
+  AUDITOR
+  VIEWER
+  ADMIN
+}
+
+enum MetricType {
+  GAS_USAGE
+  EXECUTION_TIME
+  MEMORY_USAGE
+  TRANSACTION_COUNT
+  USER_COUNT
+  ERROR_RATE
+  PERFORMANCE_SCORE
+}
+
+enum TestType {
+  UNIT
+  INTEGRATION
+  SECURITY
+  PERFORMANCE
+  FUNCTIONAL
+  STRESS
+  BENCHMARK
+}
+
+enum TestStatus {
+  PENDING
+  RUNNING
+  PASSED
+  FAILED
+  CANCELLED
+}
+
+enum AlertType {
+  DEPLOYMENT_FAILED
+  HIGH_GAS_USAGE
+  SECURITY_VULNERABILITY
+  PERFORMANCE_DEGRADATION
+  AUDIT_FAILED
+  CONTRACT_FROZEN
+  PERMISSION_CHANGED
+  NETWORK_ISSUE
+}
+
+enum AlertSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
 }
