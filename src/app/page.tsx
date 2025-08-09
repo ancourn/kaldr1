@@ -18,7 +18,8 @@ import {
   Clock,
   Users,
   Network,
-  Search
+  Search,
+  Brain
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -32,6 +33,7 @@ const navigation = [
   { name: 'Testing', href: '/testing', icon: TestTube },
   { name: 'Permissions', href: '/permissions', icon: Shield },
   { name: 'Advanced', href: '/dashboard', icon: BarChart3 },
+  { name: 'AI Intelligence', href: '/ai-dashboard', icon: Brain },
   { name: 'Bridge', href: '/bridge', icon: Network },
   { name: 'Explorer', href: '/explorer', icon: Search },
 ]

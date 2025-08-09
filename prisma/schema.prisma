@@ -161,3 +161,100 @@ model Permission {
   @@unique([resource, action, userId])
   @@map("permissions")
 }
+
+model ModelHost {
+  id            String   @id @default(cuid())
+  name          String
+  endpoint      String
+  status        String   @default("inactive") // active, inactive, maintenance
+  modelId       String
+  version       String
+  apiKeys       String   // JSON string
+  rateLimit     String   // JSON string
+  resources     String   // JSON string
+  metrics       String   // JSON string
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("model_hosts")
+}
+
+model FineTuningJob {
+  id            String   @id @default(cuid())
+  baseModelId   String
+  targetModelId String
+  status        String   @default("pending") // pending, running, completed, failed
+  progress      Float    @default(0)
+  config        String   // JSON string
+  dataset       String   // JSON string
+  metrics       String   // JSON string
+  startTime     DateTime?
+  endTime       DateTime?
+  error         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("fine_tuning_jobs")
+}
+
+model ModelVersion {
+  id            String   @id @default(cuid())
+  modelId       String
+  version       String
+  description   String
+  status        String   @default("draft") // draft, published, deprecated
+  metrics       String   // JSON string
+  artifacts     String   // JSON string
+  tags          String   // JSON string
+  createdAt     DateTime @default(now())
+  createdBy     String
+  deployment    String   // JSON string
+
+  @@map("model_versions")
+}
+
+model TestSuite {
+  id            String   @id @default(cuid())
+  name          String
+  description   String
+  version       String
+  modelId       String
+  category      String   // accuracy, performance, security, robustness, fairness
+  status        String   @default("pending") // pending, running, completed, failed
+  config        String   // JSON string
+  results       String   // JSON string
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String
+
+  @@map("test_suites")
+}
+
+model Benchmark {
+  id            String   @id @default(cuid())
+  name          String
+  description   String
+  modelId       String
+  type          String   // latency, throughput, memory, accuracy, comprehensive
+  status        String   @default("pending") // pending, running, completed, failed
+  config        String   // JSON string
+  results       String   // JSON string
+  comparisons   String   // JSON string
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("benchmarks")
+}
+
+model ValidationReport {
+  id            String   @id @default(cuid())
+  modelId       String
+  version       String
+  status        String   // valid, invalid, warning
+  checks        String   // JSON string
+  summary       String   // JSON string
+  recommendations String // JSON string
+  createdAt     DateTime @default(now())
+
+  @@map("validation_reports")
+}
