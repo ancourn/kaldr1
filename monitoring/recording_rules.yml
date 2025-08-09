@@ -1,0 +1,67 @@
+groups:
+  - name: kaldr1-recording
+    rules:
+      # API Service Recording Rules
+      - record: api_requests_total:rate5m
+        expr: rate(http_requests_total[5m])
+      
+      - record: api_requests_total:rate1h
+        expr: rate(http_requests_total[1h])
+      
+      - record: api_error_rate:5m
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])
+      
+      - record: api_latency_p95:5m
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
+      
+      - record: api_latency_p99:5m
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))
+
+      # System Resource Recording Rules
+      - record: node_cpu_usage:avg5m
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+      
+      - record: node_memory_usage:avg5m
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100
+      
+      - record: node_disk_usage:avg5m
+        expr: (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100
+
+      # Database Recording Rules
+      - record: postgres_connections_usage:percent
+        expr: pg_stat_database_numbackends / pg_settings_max_connections * 100
+      
+      - record: postgres_queries_total:rate5m
+        expr: rate(pg_stat_database_calls_total[5m])
+      
+      - record: postgres_transactions_total:rate5m
+        expr: rate(pg_stat_database_xact_total[5m])
+
+      # Redis Recording Rules
+      - record: redis_memory_usage:percent
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100
+      
+      - record: redis_operations_total:rate5m
+        expr: rate(redis_commands_total[5m])
+      
+      - record: redis_keyspace_hits:rate5m
+        expr: rate(redis_keyspace_hits_total[5m])
+      
+      - record: redis_keyspace_misses:rate5m
+        expr: rate(redis_keyspace_misses_total[5m])
+
+      # Blockchain Recording Rules
+      - record: blockchain_transactions_total:rate5m
+        expr: rate(blockchain_transactions_total[5m])
+      
+      - record: blockchain_transactions_successful:rate5m
+        expr: rate(blockchain_transactions_successful_total[5m])
+      
+      - record: blockchain_transactions_failed:rate5m
+        expr: rate(blockchain_transactions_failed_total[5m])
+      
+      - record: blockchain_blocks_mined:rate5m
+        expr: rate(blockchain_blocks_mined_total[5m])
+      
+      - record: blockchain_sync_progress:percent
+        expr: (blockchain_sync_block_height / blockchain_network_block_height) * 100
