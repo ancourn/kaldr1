@@ -7,10 +7,26 @@
     "build": "next build",
     "start": "NODE_ENV=production tsx server.ts 2>&1 | tee server.log",
     "lint": "next lint",
+    "test": "vitest",
+    "test:unit": "vitest tests/unit",
+    "test:integration": "vitest tests/integration",
+    "test:e2e": "playwright test",
+    "test:performance": "k6 run tests/performance/load-test.js",
+    "test:coverage": "vitest --coverage",
+    "test:ui": "vitest --ui",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:reset": "prisma migrate reset"
+    "db:reset": "prisma migrate reset",
+    "db:seed": "tsx prisma/seed.ts",
+    "docker:build": "docker build -t kaldr1 .",
+    "docker:dev": "docker-compose up -d",
+    "docker:staging": "docker-compose -f docker-compose.staging.yml up -d",
+    "docker:down": "docker-compose down",
+    "security:audit": "npm audit",
+    "security:scan": "npm audit --audit-level moderate",
+    "deploy:staging": "docker-compose -f docker-compose.staging.yml up -d",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
@@ -93,11 +109,15 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@playwright/test": "^1.40.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "@vitest/ui": "^1.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
     "nodemon": "^3.1.10",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.5",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^1.0.0"
   }
 }

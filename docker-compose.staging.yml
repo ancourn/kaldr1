@@ -1,0 +1,118 @@
+version: '3.8'
+
+services:
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: ancourn/kaldr1:staging
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=staging
+      - DATABASE_URL=postgresql://postgres:staging-password@db:5432/kaldr1_staging
+      - NEXTAUTH_SECRET=staging-secret-key-here
+      - NEXTAUTH_URL=http://staging.example.com:3000
+      - LOG_LEVEL=debug
+    depends_on:
+      - db
+      - redis
+    networks:
+      - kaldr1-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: kaldr1_staging
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: staging-password
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+      - ./db/init-staging:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - kaldr1-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_staging_data:/data
+    networks:
+      - kaldr1-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.staging.conf:/etc/nginx/nginx.conf
+      - ./ssl/staging:/etc/nginx/ssl
+    depends_on:
+      - app
+    networks:
+      - kaldr1-staging-network
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - kaldr1-staging-network
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana:/etc/grafana/provisioning
+    networks:
+      - kaldr1-staging-network
+    restart: unless-stopped
+
+volumes:
+  postgres_staging_data:
+  redis_staging_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  kaldr1-staging-network:
+    driver: bridge
