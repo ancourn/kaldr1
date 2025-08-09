@@ -1,0 +1,163 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  wallets   Wallet[]
+  contracts Contract[]
+  permissions Permission[]
+  transactions Transaction[]
+
+  @@map("users")
+}
+
+model Wallet {
+  id        String   @id @default(cuid())
+  address   String   @unique
+  balance   Float    @default(0)
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@map("wallets")
+}
+
+model Block {
+  id          String   @id @default(cuid())
+  hash        String   @unique
+  previousHash String
+  nonce       Int
+  height      Int      @unique
+  timestamp   DateTime @default(now())
+  data        String
+  difficulty  Int      @default(1)
+  miner       String?
+  reward      Float    @default(0)
+  
+  // Relations
+  transactions Transaction[]
+
+  @@map("blocks")
+}
+
+model Transaction {
+  id            String   @id @default(cuid())
+  hash          String   @unique
+  blockId       String?
+  fromAddress   String
+  toAddress     String
+  amount        Float
+  fee           Float    @default(0)
+  timestamp     DateTime @default(now())
+  status        String   @default("pending") // pending, confirmed, failed
+  gasUsed       Int      @default(0)
+  gasLimit      Int      @default(21000)
+  data          String?
+  
+  // Relations
+  block         Block?   @relation(fields: [blockId], references: [id])
+  user          User     @relation(fields: [fromAddress], references: [id])
+  wallet        Wallet   @relation(fields: [fromAddress], references: [address])
+
+  @@map("transactions")
+}
+
+model Contract {
+  id            String   @id @default(cuid())
+  address       String   @unique
+  name          String
+  version       String?
+  bytecode      String
+  abi           String
+  creatorId     String
+  deployedAt    DateTime @default(now())
+  status        String   @default("active") // active, inactive, deprecated
+  gasLimit      Int      @default(3000000)
+  
+  // Relations
+  creator       User     @relation(fields: [creatorId], references: [id])
+  functions     ContractFunction[]
+  events        ContractEvent[]
+
+  @@map("contracts")
+}
+
+model ContractFunction {
+  id          String   @id @default(cuid())
+  name        String
+  signature   String
+  inputs      String   // JSON string
+  outputs     String   // JSON string
+  contractId  String
+  
+  // Relations
+  contract    Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@map("contract_functions")
+}
+
+model ContractEvent {
+  id          String   @id @default(cuid())
+  name        String
+  signature   String
+  parameters  String   // JSON string
+  contractId  String
+  
+  // Relations
+  contract    Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@map("contract_events")
+}
+
+model Registry {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  type        String   // string, number, boolean, object
+  description String?
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("registry")
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  resource    String
+  action      String
+  userId      String
+  granted     Boolean  @default(false)
+  grantedBy   String?
+  grantedAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@unique([resource, action, userId])
+  @@map("permissions")
+}
