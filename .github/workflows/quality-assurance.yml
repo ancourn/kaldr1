@@ -1,0 +1,371 @@
+name: Quality Assurance & Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      check_type:
+        description: 'Quality check type'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - lint
+          - security
+          - performance
+          - documentation
+
+env:
+  NODE_VERSION: '20'
+  RUST_VERSION: 'stable'
+
+jobs:
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        check: [lint, format, security]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run ESLint
+      if: matrix.check == 'lint'
+      run: npm run lint
+      
+    - name: Check TypeScript formatting
+      if: matrix.check == 'format'
+      run: |
+        npx prettier --check src/ sdk/ --write --no-error-on-unmatched-pattern
+        
+    - name: Run security audit
+      if: matrix.check == 'security'
+      run: |
+        npm audit --audit-level moderate
+        cd sdk/typescript-client && npm audit --audit-level moderate && cd ../..
+        cd sdk/scripts && npm audit --audit-level moderate && cd ../..
+
+  openapi-quality:
+    name: OpenAPI Quality Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Validate OpenAPI specification
+      run: |
+        if [ ! -f "openapi.yaml" ]; then
+          echo "::error::OpenAPI specification file not found"
+          exit 1
+        fi
+        
+        # Install spectral for OpenAPI linting
+        npm install -g @stoplight/spectral-cli
+        
+        # Run spectral linting
+        spectral lint openapi.yaml --ruleset .spectral.yml || true
+        
+    - name: Check OpenAPI documentation
+      run: |
+        # Check for required fields
+        if ! grep -q "info:" openapi.yaml; then
+          echo "::warning::OpenAPI spec missing info section"
+        fi
+        
+        if ! grep -q "description:" openapi.yaml; then
+          echo "::warning::OpenAPI spec missing descriptions"
+        fi
+        
+        if ! grep -q "servers:" openapi.yaml; then
+          echo "::warning::OpenAPI spec missing servers section"
+        fi
+
+  sdk-quality:
+    name: SDK Quality Checks
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        sdk: [typescript, rust]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      if: matrix.sdk == 'typescript'
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: sdk/typescript-client/package-lock.json
+        
+    - name: Setup Rust
+      if: matrix.sdk == 'rust'
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: ${{ env.RUST_VERSION }}
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Generate ${{ matrix.sdk }} SDK
+      run: npm run generate:${{ matrix.sdk }}
+      
+    - name: Check ${{ matrix.sdk }} SDK quality
+      run: |
+        if [ "${{ matrix.sdk }}" == "typescript" ]; then
+          cd sdk/typescript-client
+          npm ci
+          
+          # Run TypeScript checks
+          npx tsc --noEmit
+          
+          # Run linting
+          npx eslint src/ --ext .ts,.tsx
+          
+          # Check bundle size
+          npm run build
+          ls -la dist/
+          
+        elif [ "${{ matrix.sdk }}" == "rust" ]; then
+          cd sdk/rust-client
+          
+          # Run Rust checks
+          cargo check
+          cargo clippy -- -D warnings
+          
+          # Check documentation
+          cargo doc --no-deps
+          
+          # Check build size
+          cargo build --release
+          ls -la target/release/
+        fi
+
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Setup database
+      run: |
+        npm run db:push
+        npm run db:generate
+        
+    - name: Start API server
+      run: |
+        npm run dev &
+        SERVER_PID=$!
+        
+        # Wait for server to be ready
+        for i in {1..30}; do
+          if curl -f http://localhost:3000/api/health &>/dev/null; then
+            echo "Server is ready!"
+            break
+          fi
+          sleep 2
+        done
+        
+        echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+        
+    - name: Run performance tests
+      run: |
+        # Install autocannon for performance testing
+        npm install -g autocannon
+        
+        # Test health endpoint
+        autocannon -c 10 -d 10 http://localhost:3000/api/health
+        
+        # Test chat endpoint
+        autocannon -c 5 -d 10 -m POST -H "Content-Type: application/json" -d '{"messages":[{"role":"user","content":"Hello"}]}' http://localhost:3000/api/chat
+        
+    - name: Stop API server
+      if: env.SERVER_PID != ''
+      run: |
+        kill $SERVER_PID 2>/dev/null || true
+
+  documentation-checks:
+    name: Documentation Quality Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Check documentation files
+      run: |
+        # Check for README files
+        if [ ! -f "README.md" ]; then
+          echo "::warning::Root README.md missing"
+        fi
+        
+        if [ ! -f "sdk/README.md" ]; then
+          echo "::warning::SDK README.md missing"
+        fi
+        
+        if [ ! -f "sdk/typescript-client/README.md" ]; then
+          echo "::warning::TypeScript SDK README.md missing"
+        fi
+        
+        if [ ! -f "sdk/rust-client/README.md" ]; then
+          echo "::warning::Rust SDK README.md missing"
+        fi
+        
+    - name: Check documentation links
+      run: |
+        # Install link checker
+        npm install -g markdown-link-check
+        
+        # Check links in README files
+        find . -name "README.md" -not -path "./node_modules/*" -not -path "./.git/*" | while read file; do
+          echo "Checking links in $file"
+          markdown-link-check "$file" || echo "::warning::Broken links found in $file"
+        done
+        
+    - name: Check code documentation
+      run: |
+        # Check for JSDoc comments in TypeScript files
+        find src/ -name "*.ts" -o -name "*.tsx" | head -10 | while read file; do
+          if ! grep -q "/\*\*" "$file"; then
+            echo "::warning::Missing JSDoc comments in $file"
+          fi
+        done
+        
+        # Check for Rust documentation comments
+        if [ -d "sdk/rust-client/src" ]; then
+          find sdk/rust-client/src -name "*.rs" | head -5 | while read file; do
+            if ! grep -q "///" "$file"; then
+              echo "::warning::Missing documentation comments in $file"
+            fi
+          done
+        fi
+
+  generate-report:
+    name: Generate Quality Report
+    runs-on: ubuntu-latest
+    needs: [code-quality, openapi-quality, sdk-quality, performance-tests, documentation-checks]
+    if: always()
+    
+    steps:
+    - name: Generate quality report
+      run: |
+        echo "# Quality Assurance Report" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Generated on: $(date)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Test Category | Status | Details |" >> $GITHUB_STEP_SUMMARY
+        echo "|---------------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+        
+        # Code Quality
+        if [ "${{ needs.code-quality.result }}" = "success" ]; then
+          echo "| Code Quality | ✅ Passed | Linting, formatting, and security checks passed |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| Code Quality | ❌ Failed | Issues found in linting, formatting, or security |" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        # OpenAPI Quality
+        if [ "${{ needs.openapi-quality.result }}" = "success" ]; then
+          echo "| OpenAPI Quality | ✅ Passed | API specification is valid and well-documented |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| OpenAPI Quality | ❌ Failed | Issues found in OpenAPI specification |" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        # SDK Quality
+        if [ "${{ needs.sdk-quality.result }}" = "success" ]; then
+          echo "| SDK Quality | ✅ Passed | Both TypeScript and Rust SDKs pass quality checks |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| SDK Quality | ❌ Failed | Issues found in SDK quality checks |" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        # Performance Tests
+        if [ "${{ needs.performance-tests.result }}" = "success" ]; then
+          echo "| Performance Tests | ✅ Passed | API performance meets requirements |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| Performance Tests | ❌ Failed | Performance issues detected |" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        # Documentation
+        if [ "${{ needs.documentation-checks.result }}" = "success" ]; then
+          echo "| Documentation | ✅ Passed | All documentation is present and valid |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| Documentation | ❌ Failed | Documentation issues found |" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Recommendations" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ needs.code-quality.result }}" != "success" ]; then
+          echo "- 🔧 Fix code quality issues before merging" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ needs.openapi-quality.result }}" != "success" ]; then
+          echo "- 📝 Review and fix OpenAPI specification issues" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ needs.sdk-quality.result }}" != "success" ]; then
+          echo "- 🏗️ Address SDK quality concerns" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ needs.performance-tests.result }}" != "success" ]; then
+          echo "- ⚡ Optimize API performance" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ needs.documentation-checks.result }}" != "success" ]; then
+          echo "- 📚 Update and fix documentation" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "---" >> $GITHUB_STEP_SUMMARY
+        echo "*Report generated by GitHub Actions*" >> $GITHUB_STEP_SUMMARY

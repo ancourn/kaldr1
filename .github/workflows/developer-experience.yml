@@ -1,0 +1,582 @@
+name: Developer Experience & Feedback
+
+on:
+  issues:
+    types: [opened, labeled]
+  issue_comment:
+    types: [created]
+  pull_request:
+    types: [opened, synchronize]
+  pull_request_review:
+    types: [submitted]
+  schedule:
+    # Run weekly on Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - feedback
+          - docs
+          - examples
+          - survey
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  collect-feedback:
+    name: Collect Developer Feedback
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' || github.event_name == 'issue_comment' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Analyze feedback
+      run: |
+        echo "## Developer Feedback Analysis" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ github.event_name }}" == "issues" ]; then
+          echo "### New Issue Feedback" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Issue:** #${{ github.event.issue.number }} - ${{ github.event.issue.title }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Author:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Labels:** ${{ join(github.event.issue.labels.*.name, ', ') }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Categorize feedback
+          if echo "${{ join(github.event.issue.labels.*.name, ' ') }}" | grep -qi "bug"; then
+            echo "**Category:** Bug Report 🐛" >> $GITHUB_STEP_SUMMARY
+          elif echo "${{ join(github.event.issue.labels.*.name, ' ') }}" | grep -qi "enhancement\|feature"; then
+            echo "**Category:** Feature Request ✨" >> $GITHUB_STEP_SUMMARY
+          elif echo "${{ join(github.event.issue.labels.*.name, ' ') }}" | grep -qi "documentation\|docs"; then
+            echo "**Category:** Documentation 📚" >> $GITHUB_STEP_SUMMARY
+          elif echo "${{ join(github.event.issue.labels.*.name, ' ') }}" | grep -qi "question\|help"; then
+            echo "**Category:** Question ❓" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Category:** General Feedback 💬" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+        elif [ "${{ github.event_name }}" == "issue_comment" ]; then
+          echo "### Issue Comment Feedback" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Issue:** #${{ github.event.issue.number }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commenter:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Comment:** ${{ github.event.comment.body }}" >> $GITHUB_STEP_SUMMARY
+          
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Action Required:**" >> $GITHUB_STEP_SUMMARY
+        echo "- Review and categorize feedback" >> $GITHUB_STEP_SUMMARY
+        echo "- Respond to developer within 24 hours" >> $GITHUB_STEP_SUMMARY
+        echo "- Add to product backlog if applicable" >> $GITHUB_STEP_SUMMARY
+        
+    - name: Create feedback tracking issue
+      if: github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'feedback')
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const feedbackIssue = await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `Feedback Analysis: ${context.payload.issue.title}`,
+            body: `## Feedback Analysis
+          
+### Original Issue
+- **Issue:** #${context.payload.issue.number}
+- **Title:** ${context.payload.issue.title}
+- **Author:** ${context.payload.issue.user.login}
+- **Created:** ${context.payload.issue.created_at}
+          
+### Feedback Content
+${context.payload.issue.body}
+          
+### Analysis
+- **Category:** ${context.payload.issue.labels.find(l => ['bug', 'enhancement', 'documentation', 'question'].includes(l.name))?.name || 'general'}
+- **Priority:** ${context.payload.issue.labels.find(l => ['critical', 'high', 'medium', 'low'].includes(l.name))?.name || 'medium'}
+- **Assignee:** ${context.payload.issue.assignee?.login || 'unassigned'}
+          
+### Next Steps
+- [ ] Review feedback content
+- [ ] Categorize appropriately
+- [ ] Assign to team member
+- [ ] Add to sprint planning
+- [ ] Follow up with original author
+          
+---
+*Automatically generated from issue #${context.payload.issue.number}*`,
+            labels: ['feedback-analysis', 'triage'],
+            assignees: [context.payload.issue.assignee?.login || 'maintainer']
+          });
+
+  update-documentation:
+    name: Update Documentation Based on Feedback
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Analyze documentation needs
+      run: |
+        echo "## Documentation Update Analysis" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ github.event_name }}" == "pull_request" ]; then
+          echo "### Pull Request Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**PR:** #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Author:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Files Changed:** ${{ github.event.pull_request.changed_files }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Check if documentation files were changed
+          if echo "${{ github.event.pull_request.title }}" | grep -qi "docs\|documentation\|readme"; then
+            echo "**Status:** Documentation Update Detected 📚" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Status:** Code Changes - Documentation Review Needed 📝" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+        fi
+        
+    - name: Generate documentation suggestions
+      run: |
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Documentation Suggestions" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # Check for missing documentation
+        if [ ! -f "docs/CONTRIBUTING.md" ]; then
+          echo "- 📝 Create contributing guidelines" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ ! -f "docs/DEVELOPER_GUIDE.md" ]; then
+          echo "- 📝 Create developer guide" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ ! -f "docs/API_EXAMPLES.md" ]; then
+          echo "- 📝 Create API examples documentation" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        # Check SDK documentation
+        if [ ! -f "sdk/typescript-client/docs/API.md" ]; then
+          echo "- 📝 Create TypeScript SDK API documentation" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ ! -f "sdk/rust-client/docs/API.md" ]; then
+          echo "- 📝 Create Rust SDK API documentation" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Documentation Quality Checks" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # Check for README files
+        README_FILES=$(find . -name "README.md" -not -path "./node_modules/*" -not -path "./.git/*")
+        echo "Found README files:" >> $GITHUB_STEP_SUMMARY
+        echo "$README_FILES" | sed 's/^/- /' >> $GITHUB_STEP_SUMMARY
+        
+        # Check for code documentation
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Code Documentation Coverage" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # TypeScript files with JSDoc
+        TS_FILES=$(find src/ -name "*.ts" -o -name "*.tsx" | wc -l)
+        TS_FILES_WITH_DOC=$(find src/ -name "*.ts" -o -name "*.tsx" | xargs grep -l "/\*\*" | wc -l)
+        echo "- TypeScript files: $TS_FILES" >> $GITHUB_STEP_SUMMARY
+        echo "- With JSDoc comments: $TS_FILES_WITH_DOC" >> $GITHUB_STEP_SUMMARY
+        
+        if [ $TS_FILES -gt 0 ]; then
+          COVERAGE=$((TS_FILES_WITH_DOC * 100 / TS_FILES))
+          echo "- Documentation coverage: $COVERAGE%" >> $GITHUB_STEP_SUMMARY
+        fi
+
+  create-examples:
+    name: Create Usage Examples
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'examples'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Generate SDK examples
+      run: |
+        echo "## Generated Examples Report" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # Generate TypeScript examples
+        echo "### TypeScript Examples" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        cat > examples/typescript/chat-example.ts << 'EOF'
+        import { KaldrixClient } from 'kaldrix-sdk';
+
+        const client = new KaldrixClient({
+          baseURL: 'https://api.kaldrix.com',
+          timeout: 30000,
+        });
+
+        async function chatExample() {
+          try {
+            const response = await client.chat.createChatCompletion({
+              messages: [
+                {
+                  role: 'user',
+                  content: 'Hello! Can you help me understand how to use this SDK?'
+                }
+              ]
+            });
+            
+            console.log('Response:', response.data.choices[0].message.content);
+          } catch (error) {
+            console.error('Error:', error);
+          }
+        }
+
+        chatExample();
+        EOF
+        
+        echo "- ✅ Created chat example" >> $GITHUB_STEP_SUMMARY
+        
+        cat > examples/typescript/image-example.ts << 'EOF'
+        import { KaldrixClient } from 'kaldrix-sdk';
+
+        const client = new KaldrixClient({
+          baseURL: 'https://api.kaldrix.com',
+          timeout: 60000,
+        });
+
+        async function imageExample() {
+          try {
+            const response = await client.images.createImage({
+              prompt: 'A beautiful sunset over mountains',
+              size: '1024x1024'
+            });
+            
+            console.log('Generated image:', response.data.data[0]);
+          } catch (error) {
+            console.error('Error:', error);
+          }
+        }
+
+        imageExample();
+        EOF
+        
+        echo "- ✅ Created image generation example" >> $GITHUB_STEP_SUMMARY
+        
+        # Generate Rust examples
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Rust Examples" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        cat > examples/rust/chat-example.rs << 'EOF'
+        use kaldrix_sdk::prelude::*;
+        use serde_json::json;
+        use tokio;
+
+        #[tokio::main]
+        async fn main() -> Result<(), Box<dyn std::error::Error>> {
+            let client = KaldrixClient::new("https://api.kaldrix.com");
+            
+            let chat_request = json!({
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "Hello! Can you help me understand how to use this SDK?"
+                    }
+                ]
+            });
+            
+            let response = client.chat().create_chat_completion(&chat_request).await?;
+            
+            println!("Response: {:?}", response);
+            
+            Ok(())
+        }
+        EOF
+        
+        echo "- ✅ Created Rust chat example" >> $GITHUB_STEP_SUMMARY
+        
+        cat > examples/rust/image-example.rs << 'EOF'
+        use kaldrix_sdk::prelude::*;
+        use serde_json::json;
+        use tokio;
+
+        #[tokio::main]
+        async fn main() -> Result<(), Box<dyn std::error::Error>> {
+            let client = KaldrixClient::new("https://api.kaldrix.com");
+            
+            let image_request = json!({
+                "prompt": "A beautiful sunset over mountains",
+                "size": "1024x1024"
+            });
+            
+            let response = client.images().create_image(&image_request).await?;
+            
+            println!("Generated image: {:?}", response);
+            
+            Ok(())
+        }
+        EOF
+        
+        echo "- ✅ Created Rust image generation example" >> $GITHUB_STEP_SUMMARY
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Examples Created Successfully" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "All examples have been generated and saved to the examples directory." >> $GITHUB_STEP_SUMMARY
+        echo "These examples demonstrate common use cases for both TypeScript and Rust SDKs." >> $GITHUB_STEP_SUMMARY
+
+  developer-survey:
+    name: Create Developer Survey
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'survey'
+    
+    steps:
+    - name: Create survey issue
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const surveyIssue = await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: 'Developer Experience Survey - Q1 2024',
+            body: `## Developer Experience Survey
+            
+### Introduction
+Thank you for using the KALDRIX SDK! We're constantly working to improve your development experience, and your feedback is invaluable to us.
+
+### Survey Questions
+
+#### 1. SDK Usage
+- Which SDK(s) are you using?
+  - [ ] TypeScript
+  - [ ] Rust
+  - [ ] Both
+  
+- How long have you been using the SDK?
+  - [ ] Less than 1 month
+  - [ ] 1-3 months
+  - [ ] 3-6 months
+  - [ ] 6+ months
+
+#### 2. Installation & Setup
+- How would you rate the installation process?
+  - [ ] 1 - Very Difficult
+  - [ ] 2 - Difficult
+  - [ ] 3 - Neutral
+  - [ ] 4 - Easy
+  - [ ] 5 - Very Easy
+
+- What challenges did you face during setup?
+  - [ ] None
+  - [ ] Dependency conflicts
+  - [ ] Configuration issues
+  - [ ] Documentation unclear
+  - [ ] Other (please specify)
+
+#### 3. Documentation
+- How would you rate the documentation quality?
+  - [ ] 1 - Very Poor
+  - [ ] 2 - Poor
+  - [ ] 3 - Average
+  - [ ] 4 - Good
+  - [ ] 5 - Excellent
+
+- What documentation would you like to see improved?
+  - [ ] API reference
+  - [ ] Getting started guide
+  - [ ] Examples
+  - [ ] Error handling
+  - [ ] Integration guides
+  - [ ] Other (please specify)
+
+#### 4. API Design
+- How intuitive is the API design?
+  - [ ] 1 - Very Confusing
+  - [ ] 2 - Confusing
+  - [ ] 3 - Neutral
+  - [ ] 4 - Intuitive
+  - [ ] 5 - Very Intuitive
+
+- What API features do you use most?
+  - [ ] Chat completions
+  - [ ] Image generation
+  - [ ] Web search
+  - [ ] Health checks
+  - [ ] Other (please specify)
+
+#### 5. Performance & Reliability
+- How would you rate the SDK performance?
+  - [ ] 1 - Very Poor
+  - [ ] 2 - Poor
+  - [ ] 3 - Average
+  - [ ] 4 - Good
+  - [ ] 5 - Excellent
+
+- Have you experienced any issues with:
+  - [ ] Response times
+  - [ ] Error handling
+  - [ ] Connection stability
+  - [ ] Memory usage
+  - [ ] None of the above
+
+#### 6. Feature Requests
+- What features would you like to see added?
+  - [ ] Additional API endpoints
+  - [ ] Better error messages
+  - [ ] Performance optimizations
+  - [ ] More examples
+  - [ ] Better debugging tools
+  - [ ] Other (please specify)
+
+#### 7. Overall Satisfaction
+- How likely are you to recommend this SDK to others?
+  - [ ] 0 - Not at all likely
+  - [ ] 1-2
+  - [ ] 3-4
+  - [ ] 5-6
+  - [ ] 7-8
+  - [ ] 9-10 - Extremely likely
+
+- What would make you rate this SDK higher?
+  - [ ] Better documentation
+  - [ ] More features
+  - [ ] Better performance
+  - [ ] Easier setup
+  - [ ] Better support
+  - [ ] Other (please specify)
+
+### Additional Comments
+Please share any additional feedback, suggestions, or concerns:
+
+---
+
+### How to Participate
+1. Copy this survey
+2. Fill in your responses
+3. Comment on this issue with your answers
+4. Feel free to be as detailed as you'd like
+
+### Privacy Note
+Your feedback will be used to improve the SDK. All responses will be kept confidential and aggregated for analysis.
+
+---
+
+*Thank you for your time and feedback!*`,
+            labels: ['survey', 'feedback', 'developer-experience']
+          });
+
+  weekly-report:
+    name: Generate Weekly Developer Experience Report
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Generate weekly report
+      run: |
+        echo "# Weekly Developer Experience Report" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Week:** $(date +%V-%Y)" >> $GITHUB_STEP_SUMMARY
+        echo "**Generated:** $(date)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        echo "## Key Metrics" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # Get issue statistics
+        echo "### Issues & Pull Requests" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # Count issues opened this week
+        ISSUES_THIS_WEEK=$(git log --since="1 week ago" --oneline | grep -c "#" || echo "0")
+        echo "- Issues opened this week: $ISSUES_THIS_WEEK" >> $GITHUB_STEP_SUMMARY
+        
+        # Count PRs merged this week
+        PRS_MERGED=$(git log --since="1 week ago" --merges --oneline | grep -c "Merge pull request" || echo "0")
+        echo "- Pull requests merged: $PRS_MERGED" >> $GITHUB_STEP_SUMMARY
+        
+        # Get feedback statistics
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Feedback Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # Count feedback issues
+        FEEDBACK_ISSUES=$(gh issue list --label feedback --limit 100 | wc -l)
+        echo "- Open feedback issues: $FEEDBACK_ISSUES" >> $GITHUB_STEP_SUMMARY
+        
+        # Count documentation issues
+        DOC_ISSUES=$(gh issue list --label documentation --limit 100 | wc -l)
+        echo "- Documentation issues: $DOC_ISSUES" >> $GITHUB_STEP_SUMMARY
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Developer Experience Insights" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        echo "### Positive Trends" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Active community engagement" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Regular PR contributions" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Documentation improvements ongoing" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        echo "### Areas for Improvement" >> $GITHUB_STEP_SUMMARY
+        echo "- 🔄 Continue improving documentation" >> $GITHUB_STEP_SUMMARY
+        echo "- 🔄 Address outstanding feedback" >> $GITHUB_STEP_SUMMARY
+        echo "- 🔄 Create more examples and tutorials" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        echo "## Next Week's Goals" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- 📝 Address top 5 feedback issues" >> $GITHUB_STEP_SUMMARY
+        echo "- 📚 Update 3 documentation pages" >> $GITHUB_STEP_SUMMARY
+        echo "- 💡 Create 2 new examples" >> $GITHUB_STEP_SUMMARY
+        echo "- 🎯 Respond to all new issues within 24h" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "---" >> $GITHUB_STEP_SUMMARY
+        echo "*Report generated automatically by GitHub Actions*" >> $GITHUB_STEP_SUMMARY

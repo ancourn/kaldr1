@@ -1,0 +1,316 @@
+openapi: 3.0.3
+info:
+  title: Dev Assistant API
+  description: AI-powered development assistant for contract analysis and optimization
+  version: 1.0.0
+  contact:
+    name: KALDRIX Team
+    email: dev@kaldrix.com
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://api.kaldrix.com
+    description: Production server
+security:
+  - BearerAuth: []
+paths:
+  /contracts/{contract_id}/analyze:
+    get:
+      tags:
+        - Contract Analysis
+      summary: Analyze a smart contract
+      description: Perform comprehensive analysis on a smart contract to identify issues, vulnerabilities, and optimization opportunities
+      operationId: analyzeContract
+      parameters:
+        - name: contract_id
+          in: path
+          required: true
+          description: Unique identifier of the contract to analyze
+          schema:
+            type: string
+            example: "0x1234567890abcdef1234567890abcdef12345678"
+      responses:
+        '200':
+          description: Successful contract analysis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Contract not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /contracts/optimize:
+    post:
+      tags:
+        - Contract Optimization
+      summary: Optimize smart contract code
+      description: Optimize smart contract code for better performance, gas efficiency, and security
+      operationId: optimizeContract
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OptimizeRequest'
+      responses:
+        '200':
+          description: Contract optimization completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptimizeResponse'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /health:
+    get:
+      tags:
+        - System
+      summary: Health check
+      description: Check the health status of the API service
+      operationId: healthCheck
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+                    example: "1.0.0"
+                  services:
+                    type: object
+                    properties:
+                      server:
+                        type: string
+                        example: "online"
+                      database:
+                        type: string
+                        example: "connected"
+                      ai_services:
+                        type: string
+                        example: "active"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AnalysisResponse:
+      type: object
+      description: Response containing contract analysis results
+      properties:
+        contract_id:
+          type: string
+          description: ID of the analyzed contract
+          example: "0x1234567890abcdef1234567890abcdef12345678"
+        analysis_timestamp:
+          type: string
+          format: date-time
+          description: When the analysis was performed
+        issues_found:
+          type: array
+          description: List of issues found in the contract
+          items:
+            type: object
+            properties:
+              severity:
+                type: string
+                enum: [low, medium, high, critical]
+                description: Severity level of the issue
+              type:
+                type: string
+                description: Type of issue (e.g., security, performance, gas)
+              description:
+                type: string
+                description: Detailed description of the issue
+              line_number:
+                type: integer
+                description: Line number where the issue occurs
+              suggestion:
+                type: string
+                description: Suggested fix for the issue
+          example:
+            - severity: "high"
+              type: "security"
+              description: "Reentrancy vulnerability detected"
+              line_number: 45
+              suggestion: "Use checks-effects-interactions pattern"
+        gas_analysis:
+          type: object
+          description: Gas usage analysis
+          properties:
+            total_gas:
+              type: integer
+              description: Total gas cost
+              example: 250000
+            optimization_potential:
+              type: number
+              description: Percentage of gas that could be optimized
+              example: 15.5
+            high_cost_functions:
+              type: array
+              items:
+                type: object
+                properties:
+                  function_name:
+                    type: string
+                  gas_cost:
+                    type: integer
+                  optimization_suggestion:
+                    type: string
+        security_score:
+          type: number
+          description: Overall security score (0-100)
+          example: 85
+        performance_score:
+          type: number
+          description: Overall performance score (0-100)
+          example: 92
+
+    OptimizeRequest:
+      type: object
+      required:
+        - contract_code
+      properties:
+        contract_code:
+          type: string
+          description: The smart contract code to optimize
+          example: |
+            contract SimpleStorage {
+                uint256 private storedData;
+                
+                function set(uint256 x) public {
+                    storedData = x;
+                }
+                
+                function get() public view returns (uint256) {
+                    return storedData;
+                }
+            }
+        optimization_level:
+          type: string
+          enum: [basic, aggressive, maximum]
+          description: Level of optimization to apply
+          default: "basic"
+        target_gas_reduction:
+          type: number
+          description: Target percentage of gas reduction (0-100)
+          minimum: 0
+          maximum: 100
+          example: 20
+
+    OptimizeResponse:
+      type: object
+      description: Response containing optimized contract code
+      properties:
+        optimized_code:
+          type: string
+          description: The optimized smart contract code
+        optimization_summary:
+          type: object
+          properties:
+            gas_reduction_percent:
+              type: number
+              description: Percentage of gas reduction achieved
+              example: 18.5
+            optimizations_applied:
+              type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    description: Type of optimization applied
+                  description:
+                    type: string
+                    description: Description of what was optimized
+                  impact:
+                    type: string
+                    description: Impact of the optimization
+              example:
+                - type: "gas"
+                  description: "Removed unnecessary storage operations"
+                  impact: "Reduced gas cost by 5%"
+            original_gas_estimate:
+              type: integer
+              description: Estimated gas cost of original code
+              example: 250000
+            optimized_gas_estimate:
+              type: integer
+              description: Estimated gas cost of optimized code
+              example: 203750
+        warnings:
+          type: array
+          description: Any warnings generated during optimization
+          items:
+            type: string
+          example:
+            - "Optimization may affect contract behavior in edge cases"
+        optimization_timestamp:
+          type: string
+          format: date-time
+          description: When the optimization was performed
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Contract not found"
+        code:
+          type: string
+          description: Error code
+          example: "NOT_FOUND"
+        details:
+          type: object
+          description: Additional error details
+        timestamp:
+          type: string
+          format: date-time
+          description: When the error occurred

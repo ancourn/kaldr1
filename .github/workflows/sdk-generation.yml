@@ -1,0 +1,379 @@
+name: SDK Generation & CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'openapi.yaml'
+      - 'sdk/scripts/**'
+      - '.github/workflows/sdk-generation.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'openapi.yaml'
+      - 'sdk/scripts/**'
+      - '.github/workflows/sdk-generation.yml'
+  workflow_dispatch:
+    inputs:
+      sdk_type:
+        description: 'SDK type to generate'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - typescript
+          - rust
+      publish:
+        description: 'Publish to package registries'
+        required: false
+        default: false
+        type: boolean
+      version:
+        description: 'Version to publish (leave empty for auto-increment)'
+        required: false
+        default: ''
+        type: string
+
+env:
+  NODE_VERSION: '20'
+  RUST_VERSION: 'stable'
+
+jobs:
+  validate-openapi:
+    name: Validate OpenAPI Specification
+    runs-on: ubuntu-latest
+    outputs:
+      valid: ${{ steps.validation.outputs.valid }}
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Validate OpenAPI spec
+      id: validation
+      run: |
+        if [ ! -f "openapi.yaml" ]; then
+          echo "valid=false" >> $GITHUB_OUTPUT
+          echo "::error::OpenAPI specification file not found"
+          exit 1
+        fi
+        
+        # Basic YAML validation
+        if ! python3 -c "import yaml; yaml.safe_load(open('openapi.yaml'))" 2>/dev/null; then
+          echo "valid=false" >> $GITHUB_OUTPUT
+          echo "::error::Invalid YAML in OpenAPI specification"
+          exit 1
+        fi
+        
+        echo "valid=true" >> $GITHUB_OUTPUT
+        echo "::notice::OpenAPI specification is valid"
+
+  generate-sdks:
+    name: Generate SDKs
+    runs-on: ubuntu-latest
+    needs: validate-openapi
+    if: needs.validate-openapi.outputs.valid == 'true'
+    
+    strategy:
+      matrix:
+        sdk: [typescript, rust]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Setup Rust (if needed)
+      if: matrix.sdk == 'rust'
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: ${{ env.RUST_VERSION }}
+        
+    - name: Generate ${{ matrix.sdk }} SDK
+      run: |
+        if [ "${{ github.event.inputs.sdk_type }}" == "" ] || [ "${{ github.event.inputs.sdk_type }}" == "all" ] || [ "${{ github.event.inputs.sdk_type }}" == "${{ matrix.sdk }}" ]; then
+          npm run generate:${{ matrix.sdk }}
+        else
+          echo "Skipping ${{ matrix.sdk }} SDK generation (not requested)"
+        fi
+        
+    - name: Upload generated SDK artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.sdk }}-sdk
+        path: |
+          sdk/${{ matrix.sdk }}-client/
+        retention-days: 7
+
+  test-sdks:
+    name: Test SDKs
+    runs-on: ubuntu-latest
+    needs: generate-sdks
+    
+    strategy:
+      matrix:
+        sdk: [typescript, rust]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download ${{ matrix.sdk }} SDK artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ matrix.sdk }}-sdk
+        path: sdk/${{ matrix.sdk }}-client/
+        
+    - name: Setup Node.js
+      if: matrix.sdk == 'typescript'
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: sdk/typescript-client/package-lock.json
+        
+    - name: Setup Rust (if needed)
+      if: matrix.sdk == 'rust'
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: ${{ env.RUST_VERSION }}
+        
+    - name: Install ${{ matrix.sdk }} dependencies
+      if: matrix.sdk == 'typescript'
+      run: |
+        cd sdk/typescript-client
+        npm ci
+        
+    - name: Run ${{ matrix.sdk }} tests
+      run: |
+        if [ "${{ github.event.inputs.sdk_type }}" == "" ] || [ "${{ github.event.inputs.sdk_type }}" == "all" ] || [ "${{ github.event.inputs.sdk_type }}" == "${{ matrix.sdk }}" ]; then
+          npm run test:sdk
+        else
+          echo "Skipping ${{ matrix.sdk }} SDK tests (not requested)"
+        fi
+
+  build-sdks:
+    name: Build SDKs
+    runs-on: ubuntu-latest
+    needs: test-sdks
+    
+    strategy:
+      matrix:
+        sdk: [typescript, rust]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download ${{ matrix.sdk }} SDK artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ matrix.sdk }}-sdk
+        path: sdk/${{ matrix.sdk }}-client/
+        
+    - name: Setup Node.js
+      if: matrix.sdk == 'typescript'
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: sdk/typescript-client/package-lock.json
+        
+    - name: Setup Rust (if needed)
+      if: matrix.sdk == 'rust'
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: ${{ env.RUST_VERSION }}
+        
+    - name: Install ${{ matrix.sdk }} dependencies
+      if: matrix.sdk == 'typescript'
+      run: |
+        cd sdk/typescript-client
+        npm ci
+        
+    - name: Build ${{ matrix.sdk }} SDK
+      run: |
+        if [ "${{ github.event.inputs.sdk_type }}" == "" ] || [ "${{ github.event.inputs.sdk_type }}" == "all" ] || [ "${{ github.event.inputs.sdk_type }}" == "${{ matrix.sdk }}" ]; then
+          npm run build:sdk
+        else
+          echo "Skipping ${{ matrix.sdk }} SDK build (not requested)"
+        fi
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.sdk }}-sdk-build
+        path: |
+          sdk/typescript-client/dist/
+          sdk/rust-client/target/
+        retention-days: 7
+
+  publish-sdks:
+    name: Publish SDKs
+    runs-on: ubuntu-latest
+    needs: build-sdks
+    if: github.event.inputs.publish == 'true' || (github.ref == 'refs/heads/main' && github.event_name == 'push')
+    
+    strategy:
+      matrix:
+        sdk: [typescript, rust]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download ${{ matrix.sdk }} SDK build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ matrix.sdk }}-sdk-build
+        path: sdk/${{ matrix.sdk }}-client/
+        
+    - name: Setup Node.js
+      if: matrix.sdk == 'typescript'
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: sdk/typescript-client/package-lock.json
+        registry-url: 'https://registry.npmjs.org'
+        
+    - name: Setup Rust (if needed)
+      if: matrix.sdk == 'rust'
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: ${{ env.RUST_VERSION }}
+        
+    - name: Install ${{ matrix.sdk }} dependencies
+      if: matrix.sdk == 'typescript'
+      run: |
+        cd sdk/typescript-client
+        npm ci
+        
+    - name: Determine version
+      id: version
+      run: |
+        if [ "${{ github.event.inputs.version }}" != "" ]; then
+          VERSION="${{ github.event.inputs.version }}"
+        else
+          # Get current version from package.json or Cargo.toml
+          if [ "${{ matrix.sdk }}" == "typescript" ]; then
+            VERSION=$(node -p "require('./sdk/typescript-client/package.json').version")
+          else
+            VERSION=$(grep '^version = ' sdk/rust-client/Cargo.toml | cut -d'"' -f2)
+          fi
+          # Increment patch version for new releases
+          VERSION=$(echo $VERSION | awk -F. '{print $1"."$2"."($3+1)}')
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Publishing version: $VERSION"
+        
+    - name: Update version in package.json
+      if: matrix.sdk == 'typescript'
+      run: |
+        cd sdk/typescript-client
+        npm version ${{ steps.version.outputs.version }} --no-git-tag-version
+        
+    - name: Update version in Cargo.toml
+      if: matrix.sdk == 'rust'
+      run: |
+        sed -i "s/^version = .*/version = \"${{ steps.version.outputs.version }}\"/" sdk/rust-client/Cargo.toml
+        
+    - name: Publish TypeScript SDK to npm
+      if: matrix.sdk == 'typescript'
+      run: |
+        cd sdk/typescript-client
+        npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        
+    - name: Publish Rust SDK to crates.io
+      if: matrix.sdk == 'rust'
+      run: |
+        cd sdk/rust-client
+        cargo publish
+      env:
+        CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.version.outputs.version }}
+        release_name: SDK Release v${{ steps.version.outputs.version }}
+        body: |
+          ## SDK Release v${{ steps.version.outputs.version }}
+          
+          ### Changes
+          - Generated SDKs from OpenAPI specification
+          - TypeScript and Rust clients updated
+          
+          ### Installation
+          
+          **TypeScript:**
+          ```bash
+          npm install kaldrix-sdk@${{ steps.version.outputs.version }}
+          ```
+          
+          **Rust:**
+          ```toml
+          [dependencies]
+          kaldrix-sdk = "${{ steps.version.outputs.version }}"
+          ```
+        draft: false
+        prerelease: false
+
+  create-pr:
+    name: Create Pull Request for SDK Updates
+    runs-on: ubuntu-latest
+    needs: publish-sdks
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        title: 'chore: Update SDKs to version ${{ needs.publish-sdks.outputs.version }}'
+        body: |
+          ## SDK Update
+          
+          This PR updates the generated SDKs to version ${{ needs.publish-sdks.outputs.version }}.
+          
+          ### Changes
+          - Updated TypeScript SDK
+          - Updated Rust SDK
+          - Version bumped to ${{ needs.publish-sdks.outputs.version }}
+          
+          ### Verification
+          - [ ] SDK generation successful
+          - [ ] All tests passing
+          - [ ] Build successful
+          - [ ] Published to package registries
+          
+          ### Next Steps
+          1. Review the changes
+          2. Merge to main to complete the release
+        branch: sdk-update-${{ github.run_number }}
+        delete-branch: true

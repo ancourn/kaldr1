@@ -1,0 +1,386 @@
+name: Semantic Versioning Automation
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    paths:
+      - 'openapi.yaml'
+      - 'package.json'
+      - 'sdk/**/package.json'
+      - 'sdk/**/Cargo.toml'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'openapi.yaml'
+      - 'package.json'
+      - 'sdk/**/package.json'
+      - 'sdk/**/Cargo.toml'
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+          - prerelease
+      prerelease_tag:
+        description: 'Prerelease tag (if applicable)'
+        required: false
+        type: choice
+        options:
+          - alpha
+          - beta
+          - rc
+      from_api:
+        description: 'Use version from OpenAPI spec'
+        required: false
+        default: false
+        type: boolean
+      update_packages:
+        description: 'Update package files'
+        required: false
+        default: true
+        type: boolean
+      commit:
+        description: 'Commit changes'
+        required: false
+        default: true
+        type: boolean
+      tag:
+        description: 'Create git tag'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  detect-version-change:
+    name: Detect Version Changes
+    runs-on: ubuntu-latest
+    outputs:
+      version-changed: ${{ steps.detect.outputs.version-changed }}
+      current-version: ${{ steps.detect.outputs.current-version }}
+      api-version: ${{ steps.detect.outputs.api-version }}
+      should-bump: ${{ steps.decision.outputs.should-bump }}
+      
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Install version manager dependencies
+      run: cd sdk/scripts && npm install
+      
+    - name: Detect version changes
+      id: detect
+      run: |
+        echo "🔍 Detecting version changes..."
+        
+        # Get current version
+        CURRENT_VERSION=$(cd sdk/scripts && node version-manager.js --current)
+        echo "current-version=${CURRENT_VERSION}" >> $GITHUB_OUTPUT
+        
+        # Get API version
+        API_VERSION=$(cd sdk/scripts && node version-manager.js --from-api --current)
+        echo "api-version=${API_VERSION}" >> $GITHUB_OUTPUT
+        
+        # Check if version changed
+        if [ "${{ github.event_name }}" == "push" ]; then
+          # Get changed files
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          
+          # Check if version-related files changed
+          if echo "$CHANGED_FILES" | grep -q -E "(openapi\.yaml|package\.json|Cargo\.toml)"; then
+            echo "version-changed=true" >> $GITHUB_OUTPUT
+            echo "✅ Version-related files detected"
+          else
+            echo "version-changed=false" >> $GITHUB_OUTPUT
+            echo "ℹ️  No version-related files changed"
+          fi
+        else
+          echo "version-changed=false" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Decide whether to bump version
+      id: decision
+      run: |
+        # Determine if we should bump version
+        SHOULD_BUMP="false"
+        
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          SHOULD_BUMP="true"
+        elif [ "${{ steps.detect.outputs.version-changed }}" == "true" ]; then
+          if [ "${{ github.ref_name }}" == "main" ] || [ "${{ github.ref_name }}" == "master" ]; then
+            SHOULD_BUMP="true"
+          elif [ "${{ github.ref_name }}" == "develop" ]; then
+            SHOULD_BUMP="true"
+          fi
+        fi
+        
+        echo "should-bump=${SHOULD_BUMP}" >> $GITHUB_OUTPUT
+        echo "📋 Should bump version: ${SHOULD_BUMP}"
+
+  bump-version:
+    name: Bump Version
+    runs-on: ubuntu-latest
+    needs: detect-version-change
+    if: needs.detect-version-change.outputs.should-bump == 'true'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Install version manager dependencies
+      run: cd sdk/scripts && npm install
+      
+    - name: Configure git
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+    - name: Determine version bump type
+      id: bump-type
+      run: |
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          VERSION_TYPE="${{ github.event.inputs.version_type }}"
+          PRERELEASE_TAG="${{ github.event.inputs.prerelease_tag }}"
+          FROM_API="${{ github.event.inputs.from_api }}"
+          UPDATE_PACKAGES="${{ github.event.inputs.update_packages }}"
+          COMMIT="${{ github.event.inputs.commit }}"
+          TAG="${{ github.event.inputs.tag }}"
+        else
+          # Automatic version bump based on branch and changes
+          if [ "${{ github.ref_name }}" == "main" ] || [ "${{ github.ref_name }}" == "master" ]; then
+            VERSION_TYPE="patch"
+          elif [ "${{ github.ref_name }}" == "develop" ]; then
+            VERSION_TYPE="patch"
+            PRERELEASE_TAG="alpha"
+          else
+            VERSION_TYPE="patch"
+          fi
+          
+          FROM_API="true"
+          UPDATE_PACKAGES="true"
+          COMMIT="true"
+          TAG="true"
+        fi
+        
+        echo "version-type=${VERSION_TYPE}" >> $GITHUB_OUTPUT
+        echo "prerelease-tag=${PRERELEASE_TAG}" >> $GITHUB_OUTPUT
+        echo "from-api=${FROM_API}" >> $GITHUB_OUTPUT
+        echo "update-packages=${UPDATE_PACKAGES}" >> $GITHUB_OUTPUT
+        echo "commit=${COMMIT}" >> $GITHUB_OUTPUT
+        echo "tag=${TAG}" >> $GITHUB_OUTPUT
+        
+        echo "📋 Version bump configuration:"
+        echo "   Type: ${VERSION_TYPE}"
+        echo "   Prerelease: ${PRERELEASE_TAG}"
+        echo "   From API: ${FROM_API}"
+        echo "   Update packages: ${UPDATE_PACKAGES}"
+        echo "   Commit: ${COMMIT}"
+        echo "   Tag: ${TAG}"
+        
+    - name: Bump version
+      run: |
+        echo "🏷️  Bumping version..."
+        
+        # Build version manager command
+        CMD="cd sdk/scripts && node version-manager.js"
+        CMD="$CMD --bump ${{ steps.bump-type.outputs.version-type }}"
+        
+        if [ -n "${{ steps.bump-type.outputs.prerelease-tag }}" ]; then
+          CMD="$CMD --pre-release ${{ steps.bump-type.outputs.prerelease-tag }}"
+        fi
+        
+        if [ "${{ steps.bump-type.outputs.from-api }}" == "true" ]; then
+          CMD="$CMD --from-api"
+        fi
+        
+        if [ "${{ steps.bump-type.outputs.update-packages }}" == "true" ]; then
+          CMD="$CMD --update-packages"
+        fi
+        
+        if [ "${{ steps.bump-type.outputs.commit }}" == "true" ]; then
+          CMD="$CMD --commit"
+        fi
+        
+        if [ "${{ steps.bump-type.outputs.tag }}" == "true" ]; then
+          CMD="$CMD --tag"
+        fi
+        
+        echo "📋 Running: $CMD"
+        eval $CMD
+        
+    - name: Get new version
+      id: new-version
+      run: |
+        NEW_VERSION=$(cd sdk/scripts && node version-manager.js --current)
+        echo "new-version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+        echo "📋 New version: ${NEW_VERSION}"
+        
+    - name: Push changes
+      if: steps.bump-type.outputs.commit == 'true'
+      run: |
+        echo "📤 Pushing changes..."
+        git push
+        echo "✅ Changes pushed successfully"
+        
+    - name: Push tags
+      if: steps.bump-type.outputs.tag == 'true'
+      run: |
+        echo "🏷️  Pushing tags..."
+        git push --tags
+        echo "✅ Tags pushed successfully"
+        
+    - name: Create release notes
+      run: |
+        echo "📝 Creating release notes..."
+        
+        cat > release-notes.md << EOF
+        # Version ${{ steps.new-version.outputs.new-version }}
+        
+        ## Release Information
+        - **Version**: ${{ steps.new-version.outputs.new-version }}
+        - **Previous Version**: ${{ needs.detect-version-change.outputs.current-version }}
+        - **API Version**: ${{ needs.detect-version-change.outputs.api-version }}
+        - **Commit**: ${{ github.sha }}
+        - **Branch**: ${{ github.ref_name }}
+        
+        ## Changes
+        This release includes automated SDK generation and version bumping.
+        
+        ## What's included
+        - Updated Rust SDK
+        - Updated TypeScript SDK
+        - Updated OpenAPI specification
+        - Automated version management
+        
+        ---
+        🤖 Generated with [Claude Code](https://claude.ai/code)
+        EOF
+        
+    - name: Upload release notes
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-notes-${{ steps.new-version.outputs.new-version }}
+        path: release-notes.md
+        retention-days: 30
+        
+    - name: Create GitHub Release
+      if: steps.bump-type.outputs.tag == 'true' && (github.ref_name == 'main' || github.ref_name == 'master')
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ steps.new-version.outputs.new-version }}
+        name: Release ${{ steps.new-version.outputs.new-version }}
+        body_path: release-notes.md
+        files: |
+          package.json
+          sdk/typescript-client/package.json
+          sdk/rust-client/Cargo.toml
+        draft: false
+        prerelease: ${{ contains(steps.new-version.outputs.new-version, '-') }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  version-report:
+    name: Version Report
+    runs-on: ubuntu-latest
+    needs: [detect-version-change, bump-version]
+    if: always()
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Install version manager dependencies
+      run: cd sdk/scripts && npm install
+      
+    - name: Generate version report
+      run: |
+        echo "📊 Generating version report..."
+        
+        # Get current version
+        CURRENT_VERSION=$(cd sdk/scripts && node version-manager.js --current)
+        
+        # Create version report
+        cat > version-report.md << EOF
+        # Version Management Report
+        
+        ## Report Information
+        - **Workflow Run**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        - **Commit**: ${{ github.sha }}
+        - **Branch**: ${{ github.ref_name }}
+        
+        ## Version Status
+        - **Current Version**: ${CURRENT_VERSION}
+        - **Previous Version**: ${{ needs.detect-version-change.outputs.current-version }}
+        - **API Version**: ${{ needs.detect-version-change.outputs.api-version }}
+        - **Version Changed**: ${{ needs.detect-version-change.outputs.version-changed }}
+        - **Version Bumped**: ${{ needs.bump-version.result }}
+        
+        ## Actions Taken
+        - **Version Detection**: ${{ needs.detect-version-change.result }}
+        - **Version Bumping**: ${{ needs.bump-version.result }}
+        
+        ---
+        🤖 Generated with [Claude Code](https://claude.ai/code)
+        EOF
+        
+    - name: Upload version report
+      uses: actions/upload-artifact@v4
+      with:
+        name: version-report
+        path: version-report.md
+        retention-days: 30
+        
+    - name: Comment on commit
+      if: github.event_name == 'push' && needs.bump-version.result == 'success'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const report = fs.readFileSync('version-report.md', 'utf8');
+          
+          github.rest.repos.createCommitComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            commit_sha: context.sha,
+            body: `## 🏷️  Version Management Complete\n\n${report}`
+          });

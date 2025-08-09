@@ -1,0 +1,444 @@
+name: Integration Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'openapi.yaml'
+      - 'sdk/**'
+      - 'src/app/api/**'
+      - '.github/workflows/integration-testing.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'openapi.yaml'
+      - 'sdk/**'
+      - 'src/app/api/**'
+      - '.github/workflows/integration-testing.yml'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Test type to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - typescript
+          - rust
+          - api
+
+env:
+  NODE_VERSION: '20'
+  RUST_VERSION: 'stable'
+
+jobs:
+  start-api:
+    name: Start API Server
+    runs-on: ubuntu-latest
+    outputs:
+      url: ${{ steps.start.outputs.url }}
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Setup database
+      run: |
+        npm run db:push
+        npm run db:generate
+        
+    - name: Start API server in background
+      id: start
+      run: |
+        # Start the server in background
+        npm run dev &
+        SERVER_PID=$!
+        
+        # Wait for server to be ready
+        echo "Waiting for server to start..."
+        for i in {1..30}; do
+          if curl -f http://localhost:3000/api/health &>/dev/null; then
+            echo "Server is ready!"
+            echo "url=http://localhost:3000" >> $GITHUB_OUTPUT
+            break
+          fi
+          echo "Attempt $i: Server not ready yet..."
+          sleep 2
+        done
+        
+        # Check if server is ready
+        if ! curl -f http://localhost:3000/api/health &>/dev/null; then
+          echo "Server failed to start"
+          kill $SERVER_PID
+          exit 1
+        fi
+        
+        # Keep server running
+        echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+
+  test-api-endpoints:
+    name: Test API Endpoints
+    runs-on: ubuntu-latest
+    needs: start-api
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Test health endpoint
+      run: |
+        response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health)
+        if [ "$response" -eq 200 ]; then
+          echo "Health endpoint test passed"
+        else
+          echo "Health endpoint test failed with status $response"
+          exit 1
+        fi
+        
+    - name: Test chat endpoint
+      run: |
+        response=$(curl -s -X POST http://localhost:3000/api/chat \
+          -H "Content-Type: application/json" \
+          -d '{"messages":[{"role":"user","content":"Hello"}]}' \
+          -o /dev/null -w "%{http_code}")
+        if [ "$response" -eq 200 ]; then
+          echo "Chat endpoint test passed"
+        else
+          echo "Chat endpoint test failed with status $response"
+          exit 1
+        fi
+        
+    - name: Test image generation endpoint
+      run: |
+        response=$(curl -s -X POST http://localhost:3000/api/image \
+          -H "Content-Type: application/json" \
+          -d '{"prompt":"test image"}' \
+          -o /dev/null -w "%{http_code}")
+        if [ "$response" -eq 200 ]; then
+          echo "Image generation endpoint test passed"
+        else
+          echo "Image generation endpoint test failed with status $response"
+          exit 1
+        fi
+
+  test-typescript-sdk:
+    name: Test TypeScript SDK Integration
+    runs-on: ubuntu-latest
+    needs: [start-api, test-api-endpoints]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: sdk/typescript-client/package-lock.json
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Generate TypeScript SDK
+      run: npm run generate:typescript
+      
+    - name: Install TypeScript SDK dependencies
+      run: |
+        cd sdk/typescript-client
+        npm ci
+        
+    - name: Create integration test file
+      run: |
+        cat > sdk/typescript-client/integration-test.ts << 'EOF'
+        import { KaldrixClient } from './src/index';
+        import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
+
+        describe('Kaldrix SDK Integration Tests', () => {
+          let client: KaldrixClient;
+          const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000';
+
+          beforeAll(() => {
+            client = new KaldrixClient({
+              baseURL: API_BASE_URL,
+              timeout: 30000,
+            });
+          });
+
+          describe('Health Check', () => {
+            it('should successfully check API health', async () => {
+              const response = await client.health.getHealth();
+              expect(response.status).toBe(200);
+              expect(response.data).toBeDefined();
+              expect(response.data.status).toBe('ok');
+            });
+          });
+
+          describe('Chat Operations', () => {
+            it('should successfully send a chat message', async () => {
+              const chatRequest = {
+                messages: [
+                  {
+                    role: 'user',
+                    content: 'Hello, this is a test message'
+                  }
+                ]
+              };
+
+              const response = await client.chat.createChatCompletion(chatRequest);
+              expect(response.status).toBe(200);
+              expect(response.data).toBeDefined();
+              expect(response.data.choices).toBeDefined();
+              expect(response.data.choices.length).toBeGreaterThan(0);
+            });
+
+            it('should handle chat errors gracefully', async () => {
+              const invalidRequest = {
+                messages: []
+              };
+
+              await expect(client.chat.createChatCompletion(invalidRequest))
+                .rejects
+                .toThrow();
+            });
+          });
+
+          describe('Image Generation', () => {
+            it('should successfully generate an image', async () => {
+              const imageRequest = {
+                prompt: 'A beautiful landscape with mountains',
+                size: '512x512'
+              };
+
+              const response = await client.images.createImage(imageRequest);
+              expect(response.status).toBe(200);
+              expect(response.data).toBeDefined();
+              expect(response.data.data).toBeDefined();
+              expect(response.data.data.length).toBeGreaterThan(0);
+            });
+          });
+
+          describe('Web Search', () => {
+            it('should successfully perform a web search', async () => {
+              const searchRequest = {
+                query: 'What is the capital of France?',
+                num: 5
+              };
+
+              const response = await client.webSearch.createSearch(searchRequest);
+              expect(response.status).toBe(200);
+              expect(response.data).toBeDefined();
+              expect(response.data.results).toBeDefined();
+              expect(Array.isArray(response.data.results)).toBe(true);
+            });
+          });
+        });
+        EOF
+        
+    - name: Run TypeScript SDK integration tests
+      run: |
+        cd sdk/typescript-client
+        API_BASE_URL=${{ needs.start-api.outputs.url }} npm test -- integration-test.ts
+      env:
+        API_BASE_URL: ${{ needs.start-api.outputs.url }}
+
+  test-rust-sdk:
+    name: Test Rust SDK Integration
+    runs-on: ubuntu-latest
+    needs: [start-api, test-api-endpoints]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: ${{ env.RUST_VERSION }}
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Generate Rust SDK
+      run: npm run generate:rust
+      
+    - name: Create integration test file
+      run: |
+        cat > sdk/rust-client/tests/integration_test.rs << 'EOF'
+        use kaldrix_sdk::prelude::*;
+        use serde_json::json;
+        use std::env;
+
+        #[tokio::test]
+        async fn test_health_check() {
+            let api_base_url = env::var("API_BASE_URL")
+                .unwrap_or_else(|_| "http://localhost:3000".to_string());
+            
+            let client = KaldrixClient::new(&api_base_url);
+            
+            let result = client.health().get_health().await;
+            assert!(result.is_ok());
+            
+            let response = result.unwrap();
+            assert_eq!(response.status(), reqwest::StatusCode::OK);
+            
+            let health_data: serde_json::Value = response.json().await.unwrap();
+            assert_eq!(health_data["status"], "ok");
+        }
+
+        #[tokio::test]
+        async fn test_chat_completion() {
+            let api_base_url = env::var("API_BASE_URL")
+                .unwrap_or_else(|_| "http://localhost:3000".to_string());
+            
+            let client = KaldrixClient::new(&api_base_url);
+            
+            let chat_request = json!({
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "Hello, this is a test message"
+                    }
+                ]
+            });
+            
+            let result = client.chat().create_chat_completion(&chat_request).await;
+            assert!(result.is_ok());
+            
+            let response = result.unwrap();
+            assert_eq!(response.status(), reqwest::StatusCode::OK);
+            
+            let chat_data: serde_json::Value = response.json().await.unwrap();
+            assert!(chat_data["choices"].is_array());
+            assert!(chat_data["choices"].as_array().unwrap().len() > 0);
+        }
+
+        #[tokio::test]
+        async fn test_image_generation() {
+            let api_base_url = env::var("API_BASE_URL")
+                .unwrap_or_else(|_| "http://localhost:3000".to_string());
+            
+            let client = KaldrixClient::new(&api_base_url);
+            
+            let image_request = json!({
+                "prompt": "A beautiful landscape with mountains",
+                "size": "512x512"
+            });
+            
+            let result = client.images().create_image(&image_request).await;
+            assert!(result.is_ok());
+            
+            let response = result.unwrap();
+            assert_eq!(response.status(), reqwest::StatusCode::OK);
+            
+            let image_data: serde_json::Value = response.json().await.unwrap();
+            assert!(image_data["data"].is_array());
+            assert!(image_data["data"].as_array().unwrap().len() > 0);
+        }
+
+        #[tokio::test]
+        async fn test_web_search() {
+            let api_base_url = env::var("API_BASE_URL")
+                .unwrap_or_else(|_| "http://localhost:3000".to_string());
+            
+            let client = KaldrixClient::new(&api_base_url);
+            
+            let search_request = json!({
+                "query": "What is the capital of France?",
+                "num": 5
+            });
+            
+            let result = client.web_search().create_search(&search_request).await;
+            assert!(result.is_ok());
+            
+            let response = result.unwrap();
+            assert_eq!(response.status(), reqwest::StatusCode::OK);
+            
+            let search_data: serde_json::Value = response.json().await.unwrap();
+            assert!(search_data["results"].is_array());
+            assert!(search_data["results"].as_array().unwrap().len() > 0);
+        }
+        EOF
+        
+    - name: Run Rust SDK integration tests
+      run: |
+        cd sdk/rust-client
+        API_BASE_URL=${{ needs.start-api.outputs.url }} cargo test integration_test
+      env:
+        API_BASE_URL: ${{ needs.start-api.outputs.url }}
+
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-latest
+    needs: [test-typescript-sdk, test-rust-sdk]
+    if: always()
+    
+    steps:
+    - name: Stop API server
+      if: env.SERVER_PID != ''
+      run: |
+        echo "Stopping server with PID: $SERVER_PID"
+        kill $SERVER_PID 2>/dev/null || true
+        echo "Server stopped"
+      env:
+        SERVER_PID: ${{ env.SERVER_PID }}
+
+  report:
+    name: Test Results Summary
+    runs-on: ubuntu-latest
+    needs: [test-api-endpoints, test-typescript-sdk, test-rust-sdk]
+    if: always()
+    
+    steps:
+    - name: Generate test summary
+      run: |
+        echo "## Integration Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Test Suite | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|-------------|--------|" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ needs.test-api-endpoints.result }}" = "success" ]; then
+          echo "| API Endpoints | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| API Endpoints | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ needs.test-typescript-sdk.result }}" = "success" ]; then
+          echo "| TypeScript SDK | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| TypeScript SDK | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ needs.test-rust-sdk.result }}" = "success" ]; then
+          echo "| Rust SDK | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| Rust SDK | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "All integration tests completed." >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,404 @@
+name: SDK Publishing Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop, feature/* ]
+    paths:
+      - 'openapi.yaml'
+      - 'sdk/scripts/**'
+      - 'package.json'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'openapi.yaml'
+      - 'sdk/scripts/**'
+      - 'package.json'
+  workflow_dispatch:
+    inputs:
+      publish_type:
+        description: 'Publish type'
+        required: true
+        default: 'pre-release'
+        type: choice
+        options:
+          - pre-release
+          - release
+          - dry-run
+      sdk_type:
+        description: 'SDK type to publish'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - rust
+          - typescript
+      version:
+        description: 'Override version (optional)'
+        required: false
+        type: string
+      tag:
+        description: 'Publish tag (optional)'
+        required: false
+        type: string
+
+env:
+  NODE_VERSION: '20'
+  RUST_VERSION: 'stable'
+
+jobs:
+  validate-and-build:
+    name: Validate and Build SDKs
+    runs-on: ubuntu-latest
+    outputs:
+      api-version: ${{ steps.validation.outputs.api-version }}
+      should-publish: ${{ steps.decision.outputs.should-publish }}
+      
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Validate OpenAPI specification
+      id: validation
+      run: |
+        echo "📄 Validating OpenAPI specification..."
+        
+        # Check if openapi.yaml exists
+        if [ ! -f "openapi.yaml" ]; then
+          echo "❌ OpenAPI file not found"
+          exit 1
+        fi
+        
+        # Install yaml validator
+        npm install -g @redocly/openapi-cli
+        
+        # Validate the OpenAPI spec
+        if openapi-cli lint openapi.yaml; then
+          echo "✅ OpenAPI specification is valid"
+          
+          # Extract version from the spec
+          API_VERSION=$(grep -oP 'version: \K.*' openapi.yaml | head -1 | tr -d '\r')
+          echo "api-version=${API_VERSION}" >> $GITHUB_OUTPUT
+          echo "📋 API Version: ${API_VERSION}"
+        else
+          echo "❌ OpenAPI validation failed"
+          exit 1
+        fi
+        
+    - name: Decide whether to publish
+      id: decision
+      run: |
+        # Determine if we should publish based on branch and event
+        SHOULD_PUBLISH="false"
+        
+        if [ "${{ github.event_name }}" == "push" ]; then
+          if [ "${{ github.ref_name }}" == "main" ] || [ "${{ github.ref_name }}" == "master" ]; then
+            SHOULD_PUBLISH="true"
+          elif [ "${{ github.ref_name }}" == "develop" ]; then
+            SHOULD_PUBLISH="true"
+          elif [[ "${{ github.ref_name }}" == feature/* ]]; then
+            SHOULD_PUBLISH="true"
+          fi
+        elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          SHOULD_PUBLISH="true"
+        fi
+        
+        echo "should-publish=${SHOULD_PUBLISH}" >> $GITHUB_OUTPUT
+        echo "📋 Should publish: ${SHOULD_PUBLISH}"
+        
+    - name: Generate and build SDKs
+      if: steps.decision.outputs.should-publish == 'true'
+      run: |
+        echo "🔨 Building SDKs for publishing..."
+        
+        # Generate SDKs
+        npm run generate:all
+        
+        # Build SDKs
+        npm run build:sdk
+        
+        echo "✅ SDKs generated and built successfully!"
+
+  publish-pre-release:
+    name: Publish Pre-release SDKs
+    runs-on: ubuntu-latest
+    needs: validate-and-build
+    if: |
+      needs.validate-and-build.outputs.should-publish == 'true' && (
+        github.ref_name == 'develop' || 
+        startsWith(github.ref_name, 'feature/') ||
+        github.event.inputs.publish_type == 'pre-release'
+      )
+      
+    environment: development
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        registry-url: 'https://registry.npmjs.org'
+        
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: ${{ env.RUST_VERSION }}
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Install publisher dependencies
+      run: cd sdk/scripts && npm install
+      
+    - name: Publish pre-release SDKs
+      env:
+        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      run: |
+        echo "📦 Publishing pre-release SDKs..."
+        
+        # Determine publish options
+        PUBLISH_TYPE="${{ github.event.inputs.publish_type || 'pre-release' }}"
+        SDK_TYPE="${{ github.event.inputs.sdk_type || 'all' }}"
+        VERSION="${{ github.event.inputs.version || '' }}"
+        TAG="${{ github.event.inputs.tag || 'next' }}"
+        
+        # Build publish command
+        PUBLISH_CMD="cd sdk/scripts && node publish-sdks.js"
+        PUBLISH_CMD="$PUBLISH_CMD --$SDK_TYPE"
+        PUBLISH_CMD="$PUBLISH_CMD --pre-release"
+        
+        if [ ! -z "$VERSION" ]; then
+          PUBLISH_CMD="$PUBLISH_CMD --version $VERSION"
+        fi
+        
+        if [ ! -z "$TAG" ]; then
+          PUBLISH_CMD="$PUBLISH_CMD --tag $TAG"
+        fi
+        
+        if [ "$PUBLISH_TYPE" == "dry-run" ]; then
+          PUBLISH_CMD="$PUBLISH_CMD --dry-run"
+        fi
+        
+        echo "📋 Running: $PUBLISH_CMD"
+        eval $PUBLISH_CMD
+        
+    - name: Create GitHub Release (pre-release)
+      if: github.event.inputs.publish_type != 'dry-run'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: pre-release-v${{ needs.validate-and-build.outputs.api-version }}.${{ github.run_number }}
+        name: Pre-release SDKs ${{ needs.validate-and-build.outputs.api-version }}.${{ github.run_number }}
+        body: |
+          ## Pre-release SDKs
+          
+          This is a pre-release of the auto-generated SDKs for the Dev Assistant API.
+          
+          ### What's included:
+          - **Rust SDK**: Complete Rust client library with type-safe models
+          - **TypeScript SDK**: Complete TypeScript client library with Axios integration
+          
+          ### Generated from:
+          - OpenAPI specification: `openapi.yaml`
+          - API Version: `${{ needs.validate-and-build.outputs.api-version }}`
+          - Commit: `${{ github.sha }}`
+          - Branch: `${{ github.ref_name }}`
+          
+          ### Published to:
+          - **npm**: @kaldrix/dev-assistant-client@${{ needs.validate-and-build.outputs.api-version }}-${{ github.ref_name }}.${{ github.run_number }}
+          - **crates.io**: dev-assistant-client@${{ needs.validate-and-build.outputs.api-version }}-${{ github.ref_name }}.${{ github.run_number }}
+          
+          ### Warning:
+          This is a pre-release version and may contain bugs or breaking changes.
+          Use at your own risk.
+          
+          ---
+          🤖 Generated with [Claude Code](https://claude.ai/code)
+        files: |
+          sdk/rust-client/Cargo.toml
+          sdk/typescript-client/package.json
+        draft: false
+        prerelease: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-release:
+    name: Publish Release SDKs
+    runs-on: ubuntu-latest
+    needs: validate-and-build
+    if: |
+      needs.validate-and-build.outputs.should-publish == 'true' && (
+        (github.ref_name == 'main' || github.ref_name == 'master') &&
+        github.event.inputs.publish_type != 'pre-release'
+      )
+      
+    environment: production
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        registry-url: 'https://registry.npmjs.org'
+        
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: ${{ env.RUST_VERSION }}
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Install publisher dependencies
+      run: cd sdk/scripts && npm install
+      
+    - name: Publish release SDKs
+      env:
+        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      run: |
+        echo "📦 Publishing release SDKs..."
+        
+        # Determine publish options
+        SDK_TYPE="${{ github.event.inputs.sdk_type || 'all' }}"
+        VERSION="${{ github.event.inputs.version || '' }}"
+        TAG="${{ github.event.inputs.tag || 'latest' }}"
+        
+        # Build publish command
+        PUBLISH_CMD="cd sdk/scripts && node publish-sdks.js"
+        PUBLISH_CMD="$PUBLISH_CMD --$SDK_TYPE"
+        
+        if [ ! -z "$VERSION" ]; then
+          PUBLISH_CMD="$PUBLISH_CMD --version $VERSION"
+        fi
+        
+        if [ ! -z "$TAG" ]; then
+          PUBLISH_CMD="$PUBLISH_CMD --tag $TAG"
+        fi
+        
+        if [ "${{ github.event.inputs.publish_type }}" == "dry-run" ]; then
+          PUBLISH_CMD="$PUBLISH_CMD --dry-run"
+        fi
+        
+        echo "📋 Running: $PUBLISH_CMD"
+        eval $PUBLISH_CMD
+        
+    - name: Create GitHub Release
+      if: github.event.inputs.publish_type != 'dry-run'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ needs.validate-and-build.outputs.api-version }}
+        name: SDKs Release ${{ needs.validate-and-build.outputs.api-version }}
+        body: |
+          ## Official SDKs Release
+          
+          This is the official release of the auto-generated SDKs for the Dev Assistant API.
+          
+          ### What's included:
+          - **Rust SDK**: Complete Rust client library with type-safe models
+          - **TypeScript SDK**: Complete TypeScript client library with Axios integration
+          
+          ### Generated from:
+          - OpenAPI specification: `openapi.yaml`
+          - API Version: `${{ needs.validate-and-build.outputs.api-version }}`
+          - Commit: `${{ github.sha }}`
+          
+          ### Published to:
+          - **npm**: @kaldrix/dev-assistant-client@${{ needs.validate-and-build.outputs.api-version }}
+          - **crates.io**: dev-assistant-client@${{ needs.validate-and-build.outputs.api-version }}
+          
+          ### Installation:
+          ```bash
+          # npm
+          npm install @kaldrix/dev-assistant-client
+          
+          # cargo
+          cargo add dev-assistant-client
+          ```
+          
+          ### Usage:
+          See the README files in each SDK directory for usage instructions.
+          
+          ---
+          🤖 Generated with [Claude Code](https://claude.ai/code)
+        files: |
+          sdk/rust-client/Cargo.toml
+          sdk/typescript-client/package.json
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  notify:
+    name: Notify Release
+    runs-on: ubuntu-latest
+    needs: [publish-pre-release, publish-release]
+    if: always()
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Generate release notes
+      run: |
+        echo "📝 Generating release notes..."
+        
+        # Create release notes
+        cat > release-notes.md << EOF
+        # SDK Release Notes
+        
+        ## Release Information
+        - **Workflow Run**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        - **Commit**: ${{ github.sha }}
+        - **Branch**: ${{ github.ref_name }}
+        - **API Version**: ${{ needs.validate-and-build.outputs.api-version }}
+        
+        ## Release Status
+        - **Pre-release**: ${{ needs.publish-pre-release.result }}
+        - **Production Release**: ${{ needs.publish-release.result }}
+        
+        ## Download Links
+        - **GitHub Release**: [View Release](${{ github.server_url }}/${{ github.repository }}/releases)
+        
+        ---
+        🤖 Generated with [Claude Code](https://claude.ai/code)
+        EOF
+        
+    - name: Upload release notes
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-notes
+        path: release-notes.md
+        retention-days: 30
+        
+    - name: Comment on commit
+      if: github.event_name == 'push'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const notes = fs.readFileSync('release-notes.md', 'utf8');
+          
+          github.rest.repos.createCommitComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            commit_sha: context.sha,
+            body: `## 🚀 SDK Release Complete\n\n${notes}`
+          });

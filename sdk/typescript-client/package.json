@@ -1,0 +1,56 @@
+{
+  "name": "@kaldrix/dev-assistant-client",
+  "version": "1.0.0",
+  "description": "TypeScript client SDK for Dev Assistant API",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build:clean": "rm -rf dist && npm run build",
+    "generate": "openapi-generator-cli generate -i ../../openapi.yaml -g typescript-axios -o src/generated --additional-properties=packageName=@kaldrix/dev-assistant-client,useSingleRequestParameter=true",
+    "generate:clean": "rm -rf src/generated && npm run generate",
+    "prebuild": "npm run generate:clean",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src --ext .ts,.js",
+    "lint:fix": "eslint src --ext .ts,.js --fix",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "api",
+    "client",
+    "sdk",
+    "typescript",
+    "blockchain",
+    "smart-contracts",
+    "dev-assistant"
+  ],
+  "author": "KALDRIX Team <dev@kaldrix.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kaldrix/dev-assistant-sdk.git",
+    "directory": "packages/typescript-client"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.5.0",
+    "jest-environment-node": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.0",
+    "@openapitools/openapi-generator-cli": "^2.0.0"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

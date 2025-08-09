@@ -1,0 +1,24 @@
+[package]
+name = "dev-assistant-client"
+version = "1.0.0"
+edition = "2021"
+authors = ["KALDRIX Team <dev@kaldrix.com>"]
+description = "Rust client SDK for Dev Assistant API"
+license = "MIT"
+repository = "https://github.com/kaldrix/dev-assistant-sdk"
+keywords = ["api", "client", "sdk", "blockchain", "smart-contracts"]
+categories = ["api-bindings", "web-programming::http-client"]
+
+[dependencies]
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+anyhow = "1.0"
+thiserror = "1.0"
+
+[dev-dependencies]
+tokio-test = "0.4"
+mockito = "1.0"

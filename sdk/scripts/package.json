@@ -1,0 +1,59 @@
+{
+  "name": "@kaldrix/sdk-publisher",
+  "version": "1.0.0",
+  "description": "KALDRIX SDK publishing utilities",
+  "main": "publish-sdks.js",
+  "scripts": {
+    "publish": "node publish-sdks.js",
+    "publish:all": "node publish-sdks.js --all",
+    "publish:rust": "node publish-sdks.js --rust",
+    "publish:typescript": "node publish-sdks.js --typescript",
+    "publish:pre-release": "node publish-sdks.js --all --pre-release",
+    "publish:dry-run": "node publish-sdks.js --all --dry-run",
+    "test:integration": "node run-integration-tests.js --all",
+    "test:integration:rust": "node run-integration-tests.js --rust",
+    "test:integration:typescript": "node run-integration-tests.js --typescript",
+    "test:integration:with-server": "node run-integration-tests.js --all --start-server --stop-server",
+    "version": "node version-manager.js",
+    "version:current": "node version-manager.js --current",
+    "version:validate": "node version-manager.js --validate",
+    "version:major": "node version-manager.js --bump major --update-packages --commit --tag",
+    "version:minor": "node version-manager.js --bump minor --update-packages --commit --tag",
+    "version:patch": "node version-manager.js --bump patch --update-packages --commit --tag",
+    "version:prerelease": "node version-manager.js --bump prerelease --update-packages --commit",
+    "version:alpha": "node version-manager.js --bump patch --pre-release alpha --update-packages --commit",
+    "version:beta": "node version-manager.js --bump patch --pre-release beta --update-packages --commit",
+    "version:rc": "node version-manager.js --bump patch --pre-release rc --update-packages --commit",
+    "version:from-api": "node version-manager.js --from-api --update-packages --commit --tag",
+    "feedback": "node feedback-collector.js",
+    "feedback:collect": "node feedback-collector.js --collect",
+    "feedback:show": "node feedback-collector.js --show",
+    "feedback:export": "node feedback-collector.js --export json",
+    "feedback:export:csv": "node feedback-collector.js --export csv",
+    "feedback:export:markdown": "node feedback-collector.js --export markdown",
+    "feedback:analyze": "node feedback-collector.js --analyze",
+    "feedback:report": "node feedback-collector.js --report",
+    "feedback:clear": "node feedback-collector.js --clear"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^9.4.1",
+    "fs-extra": "^10.1.0",
+    "semver": "^7.5.4"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "sdk",
+    "publishing",
+    "kaldrix",
+    "automation",
+    "testing",
+    "versioning",
+    "feedback"
+  ],
+  "author": "KALDRIX Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
