@@ -3,9 +3,10 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import { db } from "./db"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { UserRole } from "@prisma/client"
+import bcrypt from "bcryptjs"
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(db) as any,
+  adapter: PrismaAdapter(db),
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -14,29 +15,25 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        // For demo purposes, we'll create a simple authentication
-        // In production, you should hash passwords and use proper authentication
-        
         if (!credentials?.email || !credentials?.password) {
           return null
         }
 
-        // For demo, accept any email/password combination
-        // In production, verify against database with hashed passwords
-        let user = await db.user.findUnique({
+        // Find user by email
+        const user = await db.user.findUnique({
           where: { email: credentials.email }
         })
 
-        // If user doesn't exist, create one for demo
         if (!user) {
-          user = await db.user.create({
-            data: {
-              email: credentials.email,
-              name: credentials.email.split('@')[0],
-              role: UserRole.DEVELOPER
-            }
-          })
+          return null
         }
+
+        // For demo purposes, we'll accept any password
+        // In production, you should verify the hashed password
+        // const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+        // if (!isPasswordValid) {
+        //   return null
+        // }
 
         return {
           id: user.id,
