@@ -250,7 +250,7 @@ function calculateConfidence(action: string, params: any) {
 }
 
 function generateOptimizationSuggestions(action: string, params: any) {
-  const suggestions = []
+  const suggestions: string[] = []
 
   if (action === 'deploy' && params.bytecode) {
     const bytecodeLength = params.bytecode.length / 2
@@ -282,7 +282,7 @@ async function getCurrentGasPrice() {
 
 async function getHistoricalGasData() {
   // Generate mock historical gas data
-  const data = []
+  const data: any[] = []
   const now = Date.now()
   
   for (let i = 23; i >= 0; i--) {

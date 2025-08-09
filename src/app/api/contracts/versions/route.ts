@@ -236,13 +236,17 @@ class VersionControlService {
       // Create new version for rollback
       const rollbackVersion = `${targetVersion}-rollback-${Date.now()}`
       
-      await this.createVersion({
-        version: rollbackVersion,
-        bytecode: targetVersionData.bytecode,
-        abi: JSON.stringify(targetVersionData.abi),
-        changelog: `Rollback to version ${targetVersion}`,
-        deployedBy: rollbackBy
-      }, rollbackBy)
+      await this.createVersion(
+        contractId,
+        {
+          version: rollbackVersion,
+          bytecode: targetVersionData.bytecode,
+          abi: JSON.stringify(targetVersionData.abi),
+          changelog: `Rollback to version ${targetVersion}`,
+          deployedBy: rollbackBy
+        },
+        rollbackBy
+      )
 
       // Update contract status
       await db.smartContract.update({
@@ -405,8 +409,8 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case 'createVersion':
-        const { contractId, versionData } = params
-        if (!contractId || !versionData || !versionData.version || !versionData.bytecode) {
+        const { contractId, versionData: createVersionData } = params
+        if (!contractId || !createVersionData || !createVersionData.version || !createVersionData.bytecode) {
           return NextResponse.json({ 
             success: false, 
             error: 'Contract ID, version, and bytecode are required' 
@@ -429,7 +433,7 @@ export async function POST(request: NextRequest) {
 
         await versionControlService.createVersion(
           contractId,
-          versionData,
+          createVersionData,
           session.user.email
         )
 
@@ -445,17 +449,17 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true, data: versions })
 
       case 'getVersion':
-        const { contractId: versionContractId, version } = params
-        if (!versionContractId || !version) {
+        const { contractId: versionContractId, version: versionNumber } = params
+        if (!versionContractId || !versionNumber) {
           return NextResponse.json({ success: false, error: 'Contract ID and version required' }, { status: 400 })
         }
 
-        const versionData = await versionControlService.getVersion(versionContractId, version)
-        if (!versionData) {
+        const versionInfo = await versionControlService.getVersion(versionContractId, versionNumber)
+        if (!versionInfo) {
           return NextResponse.json({ success: false, error: 'Version not found' }, { status: 404 })
         }
 
-        return NextResponse.json({ success: true, data: versionData })
+        return NextResponse.json({ success: true, data: versionInfo })
 
       case 'getLatestVersion':
         const { contractId: latestContractId } = params

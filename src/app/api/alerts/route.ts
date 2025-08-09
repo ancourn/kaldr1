@@ -77,6 +77,7 @@ export async function POST(request: NextRequest) {
         contractId,
         type,
         severity,
+        title: `${type} Alert`,
         message,
         metadata: metadata || {},
         status: 'ACTIVE',

@@ -75,8 +75,21 @@ export async function GET(request: NextRequest) {
 
     // Check permissions
     if (session.user.role === UserRole.VIEWER && 
-        contract.userId !== session.user.id && 
-        session.user.role !== UserRole.ADMIN) {
+        contract.userId !== session.user.id) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Insufficient permissions to query this contract',
+          timestamp: new Date().toISOString()
+        },
+        { status: 403 }
+      )
+    }
+
+    // Admin users can access any contract
+    if (session.user.role !== UserRole.ADMIN && 
+        session.user.role !== UserRole.DEVELOPER &&
+        contract.userId !== session.user.id) {
       return NextResponse.json(
         { 
           success: false, 

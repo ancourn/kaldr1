@@ -151,24 +151,29 @@ export async function GET(request: NextRequest) {
     });
 
     // Process metrics for heatmap and charts
-    const processedMetrics = metrics.map(metric => ({
-      timestamp: metric.timestamp,
-      gasUsed: metric.gasUsed,
-      gasPrice: metric.gasPrice,
-      executionTime: metric.executionTime,
-      successRate: metric.successRate,
-      tps: metric.tps,
-      memoryUsage: metric.memoryUsage,
-    }));
+    const processedMetrics = metrics.map(metric => {
+      const additionalData = metric.additionalData ? JSON.parse(metric.additionalData) : {};
+      return {
+        timestamp: metric.timestamp,
+        gasUsed: additionalData.gasUsed || metric.value,
+        gasPrice: additionalData.gasPrice || 0,
+        executionTime: additionalData.executionTime || 0,
+        successRate: additionalData.successRate || 0,
+        tps: additionalData.tps || 0,
+        memoryUsage: additionalData.memoryUsage || 0,
+      };
+    });
 
     // Group metrics by hour for heatmap
     const hourlyMetrics = {};
     metrics.forEach(metric => {
       const hour = new Date(metric.timestamp).getHours();
+      const additionalData = metric.additionalData ? JSON.parse(metric.additionalData) : {};
+      const gasUsed = additionalData.gasUsed || metric.value;
       if (!hourlyMetrics[hour]) {
         hourlyMetrics[hour] = [];
       }
-      hourlyMetrics[hour].push(metric.gasUsed);
+      hourlyMetrics[hour].push(gasUsed);
     });
 
     const gasHeatmap = Object.keys(hourlyMetrics).map(hour => ({

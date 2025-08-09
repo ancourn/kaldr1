@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 // Mock transaction data
 const generateMockTransactions = (count: number = 10) => {
-  const transactions = []
+  const transactions: any[] = []
   const statuses = ['pending', 'confirmed', 'failed']
   const senders = ['0x1234...5678', '0xabcd...efgh', '0x5678...9012', '0x3456...7890']
   const receivers = ['0x9876...5432', '0xfedc...ba98', '0x1357...2468', '0x8642...9753']

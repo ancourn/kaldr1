@@ -416,7 +416,7 @@ class SecurityAuditService {
         }
       }
 
-      const totalScore = audits.reduce((sum, audit) => sum + audit.score, 0)
+      const totalScore = audits.reduce((sum, audit) => sum + (audit.score || 0), 0)
       const averageScore = totalScore / audits.length
 
       const vulnerabilityCount = { low: 0, medium: 0, high: 0, critical: 0 }

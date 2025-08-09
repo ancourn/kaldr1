@@ -58,6 +58,8 @@ model User {
   audits       SecurityAudit[]
   permissions  ContractPermission[]
   alerts       Alert[]
+  alertRules   AlertRule[]
+  executions   ContractExecution[]
 }
 
 model VerificationToken {
@@ -109,6 +111,7 @@ model Transaction {
   contractId  String?
   contract    SmartContract?   @relation(fields: [contractId], references: [id])
   interactions ContractInteraction[]
+  executions  ContractExecution[]
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
@@ -128,6 +131,7 @@ model SmartContract {
   version     String
   status      ContractStatus      @default(ACTIVE)
   creator     String
+  owner       String?             // Contract owner address
   type        ContractType        @default(OTHER)
   description String?
   tags        String?             // JSON array of tags
@@ -145,11 +149,14 @@ model SmartContract {
   metrics      MonitoringMetric[]
   tests        TestResult[]
   alerts       Alert[]
+  alertRules   AlertRule[]
+  executions   ContractExecution[]
 
   @@index([address])
   @@index([status])
   @@index([type])
   @@index([creator])
+  @@index([owner])
 }
 
 model ContractInteraction {
@@ -249,6 +256,7 @@ model ContractPermission {
   grantedAt   DateTime           @default(now())
   expiresAt   DateTime?
   isActive    Boolean            @default(true)
+  updatedAt   DateTime           @updatedAt
 
   @@unique([contractId, userId])
   @@index([contractId])
@@ -303,10 +311,15 @@ model Alert {
   severity    AlertSeverity @default(MEDIUM)
   title       String
   message     String
+  status      String      @default("active") // active, resolved, dismissed
   isRead      Boolean     @default(false)
   isResolved  Boolean     @default(false)
+  createdBy   String?     // User who created the alert
+  acknowledgedBy String?  // User who acknowledged the alert
+  acknowledgedAt DateTime? // When the alert was acknowledged
   metadata    String?     // JSON object with additional alert data
   createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
   resolvedAt  DateTime?
 
   @@index([contractId])
@@ -315,6 +328,55 @@ model Alert {
   @@index([severity])
   @@index([isRead])
   @@index([isResolved])
+  @@index([status])
+}
+
+model AlertRule {
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  type        AlertType
+  severity    AlertSeverity @default(MEDIUM)
+  conditions  String      // JSON string with rule conditions
+  actions     String      // JSON string with actions to take
+  isActive    Boolean     @default(true)
+  contractId  String?
+  contract    SmartContract? @relation(fields: [contractId], references: [id], onDelete: SetNull)
+  userId      String?
+  user        User?       @relation(fields: [userId], references: [id])
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([contractId])
+  @@index([userId])
+  @@index([type])
+  @@index([isActive])
+}
+
+model ContractExecution {
+  id            String   @id @default(cuid())
+  contractId    String
+  contract      SmartContract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  functionName  String
+  parameters    String   // JSON string
+  result        String?  // JSON string
+  gasUsed       BigInt?
+  gasPrice      BigInt?
+  executionTime Int?     // in milliseconds
+  status        String   @default("pending") // pending, running, completed, failed
+  error         String?
+  transactionId String?
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+  executedBy    String?
+  user          User?      @relation(fields: [executedBy], references: [id])
+  executedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([contractId])
+  @@index([status])
+  @@index([transactionId])
+  @@index([executedAt])
 }
 
 // Enums

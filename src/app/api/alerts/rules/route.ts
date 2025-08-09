@@ -121,8 +121,8 @@ export async function POST(request: NextRequest) {
         conditions,
         actions,
         severity,
-        enabled: enabled ?? true,
-        createdBy: session.user.id,
+        isActive: enabled ?? true,
+        userId: session.user.id,
       },
       include: {
         contract: {
@@ -188,7 +188,7 @@ export async function PUT(request: NextRequest) {
       select: { role: true },
     });
 
-    if (existingRule.contract.owner !== session.user.id && currentUser?.role !== 'ADMIN') {
+    if (existingRule.contract?.owner !== session.user.id && currentUser?.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Insufficient permissions' },
         { status: 403 }
@@ -271,7 +271,7 @@ export async function DELETE(request: NextRequest) {
       select: { role: true },
     });
 
-    if (existingRule.contract.owner !== session.user.id && currentUser?.role !== 'ADMIN') {
+    if (existingRule.contract?.owner !== session.user.id && currentUser?.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Insufficient permissions' },
         { status: 403 }

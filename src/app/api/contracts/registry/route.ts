@@ -32,7 +32,7 @@ interface RegistryEntry {
     type: string
     status: string
     creator: string
-    description?: string
+    description?: string | null
     tags?: string[]
     gasUsed?: string
     createdAt: Date
@@ -41,14 +41,14 @@ interface RegistryEntry {
   registry: {
     isPublic: boolean
     verified: boolean
-    verificationDate?: Date
-    verifiedBy?: string
+    verificationDate?: Date | null
+    verifiedBy?: string | null
     usageCount: number
     totalGasUsed: string
     popularityScore: number
     featured: boolean
-    category?: string
-    website?: string
+    category?: string | null
+    website?: string | null
     socialLinks?: any
     createdAt: Date
     updatedAt: Date
