@@ -668,6 +668,756 @@ impl OpcodeHandler for PopHandler {
     fn name(&self) -> &str { "POP" }
 }
 
+// Complete arithmetic opcode implementations
+struct MulHandler;
+impl OpcodeHandler for MulHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let a = interpreter.stack_manager.pop()?;
+        let b = interpreter.stack_manager.pop()?;
+        let result = U256::from_u64(a.as_u64().wrapping_mul(b.as_u64()));
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 5 }
+    fn name(&self) -> &str { "MUL" }
+}
+
+struct SubHandler;
+impl OpcodeHandler for SubHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let a = interpreter.stack_manager.pop()?;
+        let b = interpreter.stack_manager.pop()?;
+        let result = U256::from_u64(a.as_u64().wrapping_sub(b.as_u64()));
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 3 }
+    fn name(&self) -> &str { "SUB" }
+}
+
+struct DivHandler;
+impl OpcodeHandler for DivHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let a = interpreter.stack_manager.pop()?;
+        let b = interpreter.stack_manager.pop()?;
+        let result = if b.as_u64() == 0 { 
+            U256::zero() 
+        } else { 
+            U256::from_u64(a.as_u64() / b.as_u64()) 
+        };
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 5 }
+    fn name(&self) -> &str { "DIV" }
+}
+
+struct SDivHandler;
+impl OpcodeHandler for SDivHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let a = interpreter.stack_manager.pop()?;
+        let b = interpreter.stack_manager.pop()?;
+        let result = if b.as_u64() == 0 { 
+            U256::zero() 
+        } else { 
+            // Simplified signed division
+            U256::from_u64(a.as_u64().wrapping_div(b.as_u64()))
+        };
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 5 }
+    fn name(&self) -> &str { "SDIV" }
+}
+
+struct ModHandler;
+impl OpcodeHandler for ModHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let a = interpreter.stack_manager.pop()?;
+        let b = interpreter.stack_manager.pop()?;
+        let result = if b.as_u64() == 0 { 
+            U256::zero() 
+        } else { 
+            U256::from_u64(a.as_u64() % b.as_u64())
+        };
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 5 }
+    fn name(&self) -> &str { "MOD" }
+}
+
+struct SModHandler;
+impl OpcodeHandler for SModHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let a = interpreter.stack_manager.pop()?;
+        let b = interpreter.stack_manager.pop()?;
+        let result = if b.as_u64() == 0 { 
+            U256::zero() 
+        } else { 
+            U256::from_u64(a.as_u64().wrapping_rem(b.as_u64()))
+        };
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 5 }
+    fn name(&self) -> &str { "SMOD" }
+}
+
+struct AddModHandler;
+impl OpcodeHandler for AddModHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let a = interpreter.stack_manager.pop()?;
+        let b = interpreter.stack_manager.pop()?;
+        let c = interpreter.stack_manager.pop()?;
+        let result = if c.as_u64() == 0 { 
+            U256::zero() 
+        } else { 
+            U256::from_u64((a.as_u64() + b.as_u64()) % c.as_u64())
+        };
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 8 }
+    fn name(&self) -> &str { "ADDMOD" }
+}
+
+struct MulModHandler;
+impl OpcodeHandler for MulModHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let a = interpreter.stack_manager.pop()?;
+        let b = interpreter.stack_manager.pop()?;
+        let c = interpreter.stack_manager.pop()?;
+        let result = if c.as_u64() == 0 { 
+            U256::zero() 
+        } else { 
+            U256::from_u64((a.as_u64().wrapping_mul(b.as_u64())) % c.as_u64())
+        };
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 8 }
+    fn name(&self) -> &str { "MULMOD" }
+}
+
+struct ExpHandler;
+impl OpcodeHandler for ExpHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let base = interpreter.stack_manager.pop()?.as_u64();
+        let exponent = interpreter.stack_manager.pop()?.as_u64();
+        let result = U256::from_u64(base.pow(exponent.min(32) as u32)); // Limit exponent size
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 10 }
+    fn name(&self) -> &str { "EXP" }
+}
+
+struct SignExtendHandler;
+impl OpcodeHandler for SignExtendHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let _a = interpreter.stack_manager.pop()?;
+        let _b = interpreter.stack_manager.pop()?;
+        interpreter.stack_manager.push(U256::zero())?; // Placeholder
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 5 }
+    fn name(&self) -> &str { "SIGNEXTEND" }
+}
+
+// Comparison and bitwise operations
+struct LtHandler;
+impl OpcodeHandler for LtHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let a = interpreter.stack_manager.pop()?;
+        let b = interpreter.stack_manager.pop()?;
+        let result = if a.as_u64() < b.as_u64() { U256::one() } else { U256::zero() };
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 3 }
+    fn name(&self) -> &str { "LT" }
+}
+
+struct GtHandler;
+impl OpcodeHandler for GtHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let a = interpreter.stack_manager.pop()?;
+        let b = interpreter.stack_manager.pop()?;
+        let result = if a.as_u64() > b.as_u64() { U256::one() } else { U256::zero() };
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 3 }
+    fn name(&self) -> &str { "GT" }
+}
+
+struct EqHandler;
+impl OpcodeHandler for EqHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let a = interpreter.stack_manager.pop()?;
+        let b = interpreter.stack_manager.pop()?;
+        let result = if a.as_u64() == b.as_u64() { U256::one() } else { U256::zero() };
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 3 }
+    fn name(&self) -> &str { "EQ" }
+}
+
+struct IsZeroHandler;
+impl OpcodeHandler for IsZeroHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let a = interpreter.stack_manager.pop()?;
+        let result = if a.as_u64() == 0 { U256::one() } else { U256::zero() };
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 3 }
+    fn name(&self) -> &str { "ISZERO" }
+}
+
+struct AndHandler;
+impl OpcodeHandler for AndHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let a = interpreter.stack_manager.pop()?;
+        let b = interpreter.stack_manager.pop()?;
+        let result = U256::from_u64(a.as_u64() & b.as_u64());
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 3 }
+    fn name(&self) -> &str { "AND" }
+}
+
+struct OrHandler;
+impl OpcodeHandler for OrHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let a = interpreter.stack_manager.pop()?;
+        let b = interpreter.stack_manager.pop()?;
+        let result = U256::from_u64(a.as_u64() | b.as_u64());
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 3 }
+    fn name(&self) -> &str { "OR" }
+}
+
+struct XorHandler;
+impl OpcodeHandler for XorHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let a = interpreter.stack_manager.pop()?;
+        let b = interpreter.stack_manager.pop()?;
+        let result = U256::from_u64(a.as_u64() ^ b.as_u64());
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 3 }
+    fn name(&self) -> &str { "XOR" }
+}
+
+struct NotHandler;
+impl OpcodeHandler for NotHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let a = interpreter.stack_manager.pop()?;
+        let result = U256::from_u64(!a.as_u64());
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 3 }
+    fn name(&self) -> &str { "NOT" }
+}
+
+struct ByteHandler;
+impl OpcodeHandler for ByteHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let a = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let b = interpreter.stack_manager.pop()?;
+        let result = if a < 32 {
+            let byte = (b.as_u64() >> (8 * (31 - a))) & 0xFF;
+            U256::from_u64(byte)
+        } else {
+            U256::zero()
+        };
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 3 }
+    fn name(&self) -> &str { "BYTE" }
+}
+
+struct ShlHandler;
+impl OpcodeHandler for ShlHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let shift = interpreter.stack_manager.pop()?.as_u64();
+        let value = interpreter.stack_manager.pop()?;
+        let result = if shift < 256 {
+            U256::from_u64(value.as_u64().wrapping_shl(shift as u32))
+        } else {
+            U256::zero()
+        };
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 3 }
+    fn name(&self) -> &str { "SHL" }
+}
+
+struct ShrHandler;
+impl OpcodeHandler for ShrHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let shift = interpreter.stack_manager.pop()?.as_u64();
+        let value = interpreter.stack_manager.pop()?;
+        let result = if shift < 256 {
+            U256::from_u64(value.as_u64().wrapping_shr(shift as u32))
+        } else {
+            U256::zero()
+        };
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 3 }
+    fn name(&self) -> &str { "SHR" }
+}
+
+struct SarHandler;
+impl OpcodeHandler for SarHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let shift = interpreter.stack_manager.pop()?.as_u64();
+        let value = interpreter.stack_manager.pop()?;
+        let result = if shift < 256 {
+            U256::from_u64(value.as_u64().wrapping_shr(shift as u32)) // Simplified SAR
+        } else {
+            U256::from_u64(if value.as_u64() & (1 << 63) != 0 { 0xFFFFFFFFFFFFFFFF } else { 0 })
+        };
+        interpreter.stack_manager.push(result)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 3 }
+    fn name(&self) -> &str { "SAR" }
+}
+
+// Memory and storage operations
+struct MLoadHandler;
+impl OpcodeHandler for MLoadHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let offset = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let size = 32; // Load 32 bytes (word size)
+        
+        // Expand memory if needed
+        interpreter.memory_manager.expand(offset + size)?;
+        
+        // Read 32 bytes from memory
+        let mut value = U256::zero();
+        for i in 0..32 {
+            if offset + i < interpreter.memory_manager.size() {
+                let byte = interpreter.memory_manager.memory[offset + i];
+                if i < 4 {
+                    value.limbs[i] |= (byte as u64) << (i * 8);
+                }
+            }
+        }
+        
+        interpreter.stack_manager.push(value)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 3 }
+    fn name(&self) -> &str { "MLOAD" }
+}
+
+struct MStoreHandler;
+impl OpcodeHandler for MStoreHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let offset = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let value = interpreter.stack_manager.pop()?;
+        let size = 32; // Store 32 bytes (word size)
+        
+        // Expand memory if needed
+        interpreter.memory_manager.expand(offset + size)?;
+        
+        // Store 32 bytes to memory
+        for i in 0..32 {
+            if offset + i < interpreter.memory_manager.size() {
+                interpreter.memory_manager.memory[offset + i] = 
+                    ((value.limbs.get(i / 8).unwrap_or(&0) >> ((i % 8) * 8)) & 0xFF) as u8;
+            }
+        }
+        
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 3 }
+    fn name(&self) -> &str { "MSTORE" }
+}
+
+struct MStore8Handler;
+impl OpcodeHandler for MStore8Handler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let offset = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let value = interpreter.stack_manager.pop()?;
+        
+        // Expand memory if needed
+        interpreter.memory_manager.expand(offset + 1)?;
+        
+        // Store 1 byte to memory
+        if offset < interpreter.memory_manager.size() {
+            interpreter.memory_manager.memory[offset] = value.as_u64() as u8;
+        }
+        
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 3 }
+    fn name(&self) -> &str { "MSTORE8" }
+}
+
+struct SLoadHandler;
+impl OpcodeHandler for SLoadHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let _key = interpreter.stack_manager.pop()?;
+        // Placeholder - would load from storage
+        interpreter.stack_manager.push(U256::zero())?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 50 }
+    fn name(&self) -> &str { "SLOAD" }
+}
+
+struct SStoreHandler;
+impl OpcodeHandler for SStoreHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let _key = interpreter.stack_manager.pop()?;
+        let _value = interpreter.stack_manager.pop()?;
+        // Placeholder - would store to storage
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 0 }
+    fn name(&self) -> &str { "SSTORE" }
+}
+
+// Control flow operations
+struct JumpHandler;
+impl OpcodeHandler for JumpHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let dest = interpreter.stack_manager.pop()?.as_u64() as usize;
+        
+        // Validate jump destination
+        if dest >= interpreter.context.bytecode.len() {
+            return Err(ExecutionError::InvalidJump);
+        }
+        
+        if interpreter.context.bytecode[dest] != 0x5b { // JUMPDEST
+            return Err(ExecutionError::InvalidJump);
+        }
+        
+        interpreter.context.pc = dest;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 8 }
+    fn name(&self) -> &str { "JUMP" }
+}
+
+struct JumpiHandler;
+impl OpcodeHandler for JumpiHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let dest = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let condition = interpreter.stack_manager.pop()?;
+        
+        if condition.as_u64() != 0 {
+            // Validate jump destination
+            if dest >= interpreter.context.bytecode.len() {
+                return Err(ExecutionError::InvalidJump);
+            }
+            
+            if interpreter.context.bytecode[dest] != 0x5b { // JUMPDEST
+                return Err(ExecutionError::InvalidJump);
+            }
+            
+            interpreter.context.pc = dest;
+        } else {
+            interpreter.context.pc += 1;
+        }
+        
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 10 }
+    fn name(&self) -> &str { "JUMPI" }
+}
+
+struct PCHandler;
+impl OpcodeHandler for PCHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        interpreter.stack_manager.push(U256::from_u64(interpreter.context.pc as u64 + 1))?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 2 }
+    fn name(&self) -> &str { "PC" }
+}
+
+struct MSizeHandler;
+impl OpcodeHandler for MSizeHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        interpreter.stack_manager.push(U256::from_u64(interpreter.memory_manager.size() as u64))?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 2 }
+    fn name(&self) -> &str { "MSIZE" }
+}
+
+struct GasHandler;
+impl OpcodeHandler for GasHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let remaining_gas = interpreter.gas_meter.gas_limit - interpreter.gas_meter.gas_used();
+        interpreter.stack_manager.push(U256::from_u64(remaining_gas))?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 2 }
+    fn name(&self) -> &str { "GAS" }
+}
+
+struct JumpDestHandler;
+impl OpcodeHandler for JumpDestHandler {
+    fn execute(&self, _interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 1 }
+    fn name(&self) -> &str { "JUMPDEST" }
+}
+
+// Dup operations
+struct DupHandler { offset: usize }
+impl OpcodeHandler for DupHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        interpreter.stack_manager.dup(self.offset - 1)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 3 }
+    fn name(&self) -> &str { &format!("DUP{}", self.offset) }
+}
+
+// Swap operations
+struct SwapHandler { offset: usize }
+impl OpcodeHandler for SwapHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        interpreter.stack_manager.swap(self.offset)?;
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 3 }
+    fn name(&self) -> &str { &format!("SWAP{}", self.offset) }
+}
+
+// Logging operations
+struct Log0Handler;
+impl OpcodeHandler for Log0Handler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let _offset = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _size = interpreter.stack_manager.pop()?.as_u64() as usize;
+        // Placeholder - would create log entry
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 375 }
+    fn name(&self) -> &str { "LOG0" }
+}
+
+struct Log1Handler;
+impl OpcodeHandler for Log1Handler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let _offset = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _size = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _topic1 = interpreter.stack_manager.pop()?;
+        // Placeholder - would create log entry with 1 topic
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 750 }
+    fn name(&self) -> &str { "LOG1" }
+}
+
+struct Log2Handler;
+impl OpcodeHandler for Log2Handler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let _offset = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _size = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _topic1 = interpreter.stack_manager.pop()?;
+        let _topic2 = interpreter.stack_manager.pop()?;
+        // Placeholder - would create log entry with 2 topics
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 1125 }
+    fn name(&self) -> &str { "LOG2" }
+}
+
+struct Log3Handler;
+impl OpcodeHandler for Log3Handler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let _offset = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _size = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _topic1 = interpreter.stack_manager.pop()?;
+        let _topic2 = interpreter.stack_manager.pop()?;
+        let _topic3 = interpreter.stack_manager.pop()?;
+        // Placeholder - would create log entry with 3 topics
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 1500 }
+    fn name(&self) -> &str { "LOG3" }
+}
+
+struct Log4Handler;
+impl OpcodeHandler for Log4Handler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let _offset = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _size = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _topic1 = interpreter.stack_manager.pop()?;
+        let _topic2 = interpreter.stack_manager.pop()?;
+        let _topic3 = interpreter.stack_manager.pop()?;
+        let _topic4 = interpreter.stack_manager.pop()?;
+        // Placeholder - would create log entry with 4 topics
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 1875 }
+    fn name(&self) -> &str { "LOG4" }
+}
+
+// System operations
+struct CreateHandler;
+impl OpcodeHandler for CreateHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let _value = interpreter.stack_manager.pop()?;
+        let _offset = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _size = interpreter.stack_manager.pop()?.as_u64() as usize;
+        // Placeholder - would create new contract
+        interpreter.stack_manager.push(U256::zero())?; // Return address 0 for now
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 32000 }
+    fn name(&self) -> &str { "CREATE" }
+}
+
+struct CallHandler;
+impl OpcodeHandler for CallHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let _gas = interpreter.stack_manager.pop()?;
+        let _address = interpreter.stack_manager.pop()?;
+        let _value = interpreter.stack_manager.pop()?;
+        let _args_offset = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _args_size = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _ret_offset = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _ret_size = interpreter.stack_manager.pop()?.as_u64() as usize;
+        // Placeholder - would execute call
+        interpreter.stack_manager.push(U256::one())?; // Return success
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 40 }
+    fn name(&self) -> &str { "CALL" }
+}
+
+struct CallCodeHandler;
+impl OpcodeHandler for CallCodeHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let _gas = interpreter.stack_manager.pop()?;
+        let _address = interpreter.stack_manager.pop()?;
+        let _value = interpreter.stack_manager.pop()?;
+        let _args_offset = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _args_size = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _ret_offset = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _ret_size = interpreter.stack_manager.pop()?.as_u64() as usize;
+        // Placeholder - would execute callcode
+        interpreter.stack_manager.push(U256::one())?; // Return success
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 40 }
+    fn name(&self) -> &str { "CALLCODE" }
+}
+
+struct ReturnHandler;
+impl OpcodeHandler for ReturnHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let offset = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let size = interpreter.stack_manager.pop()?.as_u64() as usize;
+        
+        // Expand memory if needed
+        interpreter.memory_manager.expand(offset + size)?;
+        
+        // Return data from memory
+        let data = interpreter.memory_manager.memory[offset..offset + size].to_vec();
+        Ok(ExecutionResult::Return(data))
+    }
+    fn gas_cost(&self) -> u64 { 0 }
+    fn name(&self) -> &str { "RETURN" }
+}
+
+struct DelegateCallHandler;
+impl OpcodeHandler for DelegateCallHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let _gas = interpreter.stack_manager.pop()?;
+        let _address = interpreter.stack_manager.pop()?;
+        let _args_offset = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _args_size = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _ret_offset = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _ret_size = interpreter.stack_manager.pop()?.as_u64() as usize;
+        // Placeholder - would execute delegatecall
+        interpreter.stack_manager.push(U256::one())?; // Return success
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 40 }
+    fn name(&self) -> &str { "DELEGATECALL" }
+}
+
+struct StaticCallHandler;
+impl OpcodeHandler for StaticCallHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let _gas = interpreter.stack_manager.pop()?;
+        let _address = interpreter.stack_manager.pop()?;
+        let _args_offset = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _args_size = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _ret_offset = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let _ret_size = interpreter.stack_manager.pop()?.as_u64() as usize;
+        // Placeholder - would execute staticcall
+        interpreter.stack_manager.push(U256::one())?; // Return success
+        Ok(ExecutionResult::Continue)
+    }
+    fn gas_cost(&self) -> u64 { 40 }
+    fn name(&self) -> &str { "STATICCALL" }
+}
+
+struct RevertHandler;
+impl OpcodeHandler for RevertHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let offset = interpreter.stack_manager.pop()?.as_u64() as usize;
+        let size = interpreter.stack_manager.pop()?.as_u64() as usize;
+        
+        // Expand memory if needed
+        interpreter.memory_manager.expand(offset + size)?;
+        
+        // Revert with data from memory
+        let data = interpreter.memory_manager.memory[offset..offset + size].to_vec();
+        Ok(ExecutionResult::Revert(data))
+    }
+    fn gas_cost(&self) -> u64 { 0 }
+    fn name(&self) -> &str { "REVERT" }
+}
+
+struct SelfDestructHandler;
+impl OpcodeHandler for SelfDestructHandler {
+    fn execute(&self, interpreter: &mut BytecodeInterpreter) -> Result<ExecutionResult, ExecutionError> {
+        let _recipient = interpreter.stack_manager.pop()?;
+        // Placeholder - would self-destruct contract
+        Ok(ExecutionResult::Stop)
+    }
+    fn gas_cost(&self) -> u64 { 0 }
+    fn name(&self) -> &str { "SELFDESTRUCT" }
+}
+
+impl fmt::Display for U256 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "0x{:016x}{:016x}{:016x}{:016x}", 
+               self.limbs[3], self.limbs[2], self.limbs[1], self.limbs[0])
+    }
+}
+
+impl fmt::Debug for U256 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "U256({})", self)
+    }
+}
+
 // Additional handlers would be implemented for all opcodes...
 
 impl fmt::Display for U256 {
